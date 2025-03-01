@@ -335,8 +335,8 @@ namespace Etape1
         /// <param name="nomFichier">Le chemin du fichier où enregistrer l'image.</param>
         public void ImageGraphe(string nomFichier)
         {
-            int largeur = 800;
-            int hauteur = 600;
+            int largeur = 1000;
+            int hauteur = 800;
 
             using (var bitmap = new SKBitmap(largeur, hauteur))
             using (var canvas = new SKCanvas(bitmap))
@@ -371,8 +371,8 @@ namespace Etape1
                         );
                         collision = positions.Values.Any(p => SKPoint.Distance(p, tentativePosition) < espaceMin);
                         essais++;
-                        rayon += 10;
-                    } while (collision && essais < 10);
+                        rayon += 20;
+                    } while (collision && essais < 20);
 
                     positions[noeudsTries[i]] = tentativePosition;
                 }
@@ -408,3 +408,4 @@ namespace Etape1
         }
     }
 }
+

@@ -6,7 +6,7 @@ namespace TestProject
     public class UnitTest1
     {
         [TestMethod]
-        public void TestAjoutLiens()
+        public void TestAjoutNoeuLiens()
         {
             var graphe = new Graph<int>();
             graphe.AjouterLien(1, 2);

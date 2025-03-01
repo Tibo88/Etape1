@@ -20,7 +20,9 @@ namespace TestProject
         [TestMethod]
         public void TestDFS()
         {
-            var graphe = new Graph<int>();            
+            var graphe = new Graph<int>();
+
+            
             graphe.listeAdjacence = new Dictionary<int, List<int>>()
             {
             { 1, new List<int> { 2, 3 } },
@@ -43,6 +45,8 @@ namespace TestProject
         public void TestBFS()
         {
             var graphe = new Graph<int>();
+
+            // Initialisation manuelle de la liste d'adjacence
             graphe.listeAdjacence = new Dictionary<int, List<int>>()
             {
             { 1, new List<int> { 2, 3 } },
@@ -61,7 +65,44 @@ namespace TestProject
             Assert.AreEqual(5, resultat.Count);
         }
 
+        [TestMethod]
+        public void TestContientCycle_Vrai()
+        {
+            //Création d'un graphe avec un petit cycle 1 -> 2 -> 3 -> 1
+            var graphe = new Graph<int>();
 
+            graphe.listeAdjacence = new Dictionary<int, List<int>>()
+            {
+            { 1, new List<int> { 2 } },
+            { 2, new List<int> { 3 } },
+            { 3, new List<int> { 1 } },
+            };
+            graphe.AjouterLien(1, 2);
+            graphe.AjouterLien(2, 3);
+            graphe.AjouterLien(3, 1);
 
+            bool resultat = graphe.ContientCycle();
+
+            Assert.IsTrue(resultat, "Le graphe devrait contenir un cycle");
+        }
+
+        [TestMethod]
+        public void TestContientCycle_Faux()
+        {
+            //Création d'un graphe sans cycle 1 -> 2 -> 3
+            var graphe = new Graph<int>();
+            graphe.listeAdjacence = new Dictionary<int, List<int>>()
+            {
+            { 1, new List<int> { 2 } },
+            { 2, new List<int> { 3 } },
+            { 3, new List<int> {  } },
+            };
+            graphe.AjouterLien(1, 2);
+            graphe.AjouterLien(2, 3);
+
+            bool resultat = graphe.ContientCycle();
+
+            Assert.IsFalse(resultat, "Le graphe ne devrait pas contenir de cycle");
+        }
     }
 }

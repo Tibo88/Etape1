@@ -6,7 +6,7 @@ namespace TestProject
     public class UnitTest1
     {
         [TestMethod]
-        public void AjouterLien_TestAjoutNoeudsEtLiens()
+        public void TestAjoutLiens()
         {
             var graphe = new Graph<int>();
             graphe.AjouterLien(1, 2);
@@ -66,7 +66,7 @@ namespace TestProject
         }
 
         [TestMethod]
-        public void TestContientCycle_Vrai()
+        public void TestContientCycle()
         {
             //Création d'un graphe avec un petit cycle 1 -> 2 -> 3 -> 1
             var graphe = new Graph<int>();
@@ -87,7 +87,7 @@ namespace TestProject
         }
 
         [TestMethod]
-        public void TestContientCycle_Faux()
+        public void TestContientPasCycle()
         {
             //Création d'un graphe sans cycle 1 -> 2 -> 3
             var graphe = new Graph<int>();

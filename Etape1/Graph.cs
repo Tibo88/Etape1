@@ -1,8 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SkiaSharp;
+
+
 
 namespace Etape1
 {
@@ -11,8 +14,8 @@ namespace Etape1
         public Dictionary<T, Noeud<T>> noeuds { get; }
 
         public bool EstOriente { get; }
-        private Dictionary<T, List<T>> listeAdjacence;
-        private int[,] matriceAdjacence;
+        public Dictionary<T, List<T>> listeAdjacence;
+        public int[,] matriceAdjacence;
 
         public Graph(bool estOriente = false)
         {
@@ -38,7 +41,7 @@ namespace Etape1
 
             if (noeud1 == null || noeud2 == null)
             {
-                throw new InvalidOperationException("Erreur : Un des noeuds est null après ajout.");
+                throw new InvalidOperationException("Erreur : ajout d'un noeud null");
             }
 
             var lien = new Lien<T>(noeud1, noeud2);
@@ -100,23 +103,21 @@ namespace Etape1
 
         public void CreerMatriceAdjacence()
         {
-            int taille = 34; 
+            int taille = 34;
             matriceAdjacence = new int[taille, taille];
 
 
             foreach (var noeud in noeuds.Values)
             {
-                int i = Convert.ToInt32(noeud.Nom) - 1; // Ajustement pour que 1 → 0, 34 → 33
+                int i = Convert.ToInt32(noeud.Nom) - 1;
 
                 foreach (var lien in noeud.Liens)
                 {
-                    int j = Convert.ToInt32(lien.Destination.Nom) - 1; 
+                    int j = Convert.ToInt32(lien.Destination.Nom) - 1;
 
-                    if (i != j) 
+                    if (i != j)
                     {
                         matriceAdjacence[i, j] = 1;
-
-                        // Si le graphe est non orienté, ajouter aussi la connexion inverse
                         if (!EstOriente)
                         {
                             matriceAdjacence[j, i] = 1;
@@ -124,15 +125,12 @@ namespace Etape1
                     }
                 }
             }
-
-
-        // Afficher la matrice d'adjacence
-        AfficherMatriceAdjacence();
+            AfficherMatrice();
         }
 
 
 
-        public void AfficherListeAdjacence()
+        public void AfficherListe()
         {
             foreach (var pair in listeAdjacence)
             {
@@ -141,7 +139,7 @@ namespace Etape1
             }
         }
 
-        public void AfficherMatriceAdjacence()
+        public void AfficherMatrice()
         {
             for (int i = 0; i < matriceAdjacence.GetLength(0); i++)
             {
@@ -153,33 +151,23 @@ namespace Etape1
             }
         }
 
-        public void DFS(T depart)
+        public List<T> DFS(T start)
         {
-            if (!noeuds.ContainsKey(depart))
-            {
-                Console.WriteLine("Le nœud de départ n'existe pas.");
-                return;
-            }
-
-            List<T> visite = new List<T>(); // Liste contenant les nœuds déjà visités
-            Stack<T> pile = new Stack<T>(); // Pile utilisée pour le parcours en profondeur
-
-            pile.Push(depart);
+            List<T> visited = new List<T>();
+            Stack<T> pile = new Stack<T>();
+            pile.Push(start);
 
             while (pile.Count > 0)
             {
                 T courant = pile.Pop();
-
-                if (!visite.Contains(courant)) // Vérifier si le nœud a déjà été visité
+                if (!visited.Contains(courant))
                 {
-                    Console.Write(courant + " "); // Affichage du nœud visité
-                    visite.Add(courant); // Marquer le nœud comme visité
-
+                    visited.Add(courant);
                     if (listeAdjacence.ContainsKey(courant))
                     {
                         foreach (T voisin in listeAdjacence[courant])
                         {
-                            if (!visite.Contains(voisin)) // Ajouter seulement les nœuds non visités
+                            if (!visited.Contains(voisin))
                             {
                                 pile.Push(voisin);
                             }
@@ -187,43 +175,150 @@ namespace Etape1
                     }
                 }
             }
+            return visited;
         }
-
-        public void BFS(T depart)
+        public List<T> BFS(T depart)
         {
-            if (!noeuds.ContainsKey(depart))
-            {
-                Console.WriteLine("Le nœud de départ n'existe pas.");
-                return;
-            }
-
-            List<T> visite = new List<T>(); // Liste pour suivre les nœuds visités
-            Queue<T> file = new Queue<T>(); // File d'attente pour le BFS
+            List<T> visited = new List<T>();
+            Queue<T> file = new Queue<T>();
 
             file.Enqueue(depart);
-            visite.Add(depart);
+            visited.Add(depart);
 
             while (file.Count > 0)
             {
                 T courant = file.Dequeue();
-                Console.Write(courant + " "); // Affichage du nœud visité
+                if (listeAdjacence.ContainsKey(courant))
+                {
+                    foreach (T voisin in listeAdjacence[courant])
+                    {
+                        if (!visited.Contains(voisin))
+                        {
+                            file.Enqueue(voisin);
+                            visited.Add(voisin);
+                        }
+                    }
+                }
+            }
+            return visited;
+        }
+
+
+        public bool TestConnexe()
+        {
+            if (noeuds.Count == 0)
+            {
+                return false;
+            }
+
+            List<T> visited = new List<T>();
+            List<T> aExplorer = new List<T>();
+
+            T premierNoeud = noeuds.Keys.First();
+            aExplorer.Add(premierNoeud);
+            visited.Add(premierNoeud);
+
+            while (aExplorer.Count > 0)
+            {
+                T courant = aExplorer[0];
+                aExplorer.RemoveAt(0);
 
                 if (listeAdjacence.ContainsKey(courant))
                 {
                     foreach (T voisin in listeAdjacence[courant])
                     {
-                        if (!visite.Contains(voisin)) // Vérifie si le voisin n'a pas encore été visité
+                        if (!visited.Contains(voisin))
                         {
-                            file.Enqueue(voisin);
-                            visite.Add(voisin); // Marquer le nœud comme visité
+                            visited.Add(voisin);
+                            aExplorer.Add(voisin);
                         }
                     }
                 }
             }
+
+            return visited.Count == noeuds.Count;
         }
 
 
 
+
+        public void GenererGraphe(string fichierImage)
+        {
+            int largeur = 800;
+            int hauteur = 600;
+
+            using (var bitmap = new SKBitmap(largeur, hauteur))
+            using (var canvas = new SKCanvas(bitmap))
+            {
+                canvas.Clear(SKColors.White);
+                var paintLien = new SKPaint { Color = SKColors.Black, StrokeWidth = 2, IsAntialias = true };
+                var paintNoeud = new SKPaint { Color = SKColors.Red, IsAntialias = true };
+                var paintTexte = new SKPaint { Color = SKColors.Black, TextSize = 20, IsAntialias = true };
+
+                Dictionary<T, int> degres = noeuds.ToDictionary(n => n.Key, n => n.Value.Liens.Count);
+                var noeudsTries = noeuds.Keys.OrderByDescending(n => degres[n]).ToList();
+                Dictionary<T, SKPoint> positions = new Dictionary<T, SKPoint>();
+                
+                int centreX = largeur / 2;
+                int centreY = hauteur / 2;
+                int rayonMax = Math.Min(largeur, hauteur) / 3;
+                int espaceMin = 80;
+
+                for (int i = 0; i < noeudsTries.Count; i++)
+                {
+                    double angle = (2 * Math.PI * i) / noeudsTries.Count;
+                    int rayon = rayonMax - (degres[noeudsTries[i]] * 10);
+                    bool collision;
+                    SKPoint tentativePosition;
+                    int essais = 0;
+
+                    do
+                    {
+                        tentativePosition = new SKPoint(
+                            centreX + (float)(rayon * Math.Cos(angle)),
+                            centreY + (float)(rayon * Math.Sin(angle))
+                        );
+                        collision = positions.Values.Any(p => SKPoint.Distance(p, tentativePosition) < espaceMin);
+                        essais++;
+                        rayon += 10;
+                    } while (collision && essais < 10);
+
+                    positions[noeudsTries[i]] = tentativePosition;
+                }
+
+                foreach (var noeud in noeuds.Values)
+                {
+                    foreach (var lien in noeud.Liens)
+                    {
+                        if (positions.ContainsKey(noeud.Nom) && positions.ContainsKey(lien.Destination.Nom))
+                        {
+                            canvas.DrawLine(positions[noeud.Nom], positions[lien.Destination.Nom], paintLien);
+                        }
+                    }
+                }
+
+                foreach (var noeud in noeuds.Values)
+                {
+                    if (positions.ContainsKey(noeud.Nom))
+                    {
+                        var position = positions[noeud.Nom];
+                        canvas.DrawCircle(position, 20, paintNoeud);
+                        canvas.DrawText(noeud.Nom.ToString(), position.X - 10, position.Y + 5, paintTexte);
+                    }
+                }
+
+                using (var image = SKImage.FromBitmap(bitmap))
+                using (var data = image.Encode(SKEncodedImageFormat.Png, 100))
+                using (var stream = File.OpenWrite(fichierImage))
+                {
+                    data.SaveTo(stream);
+                }
+
+                Console.WriteLine($"Image générée : {fichierImage}");
+            }
+        }
+    }
+}
 
 
 

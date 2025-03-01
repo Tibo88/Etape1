@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SkiaSharp;
-
-
 
 namespace Etape1
 {
@@ -29,6 +28,11 @@ namespace Etape1
             get { return listeAdjacence; }
         }
 
+        /// <summary>
+        /// ajoute un lien entre deux noeuds du graphe
+        /// </summary>
+        /// <param name="valeur1">Le premier nœud.</param>
+        /// <param name="valeur2">Le second nœud.</param>
         public void AjouterLien(T valeur1, T valeur2)
         {
             if (!noeuds.ContainsKey(valeur1))
@@ -59,10 +63,13 @@ namespace Etape1
                 noeud2.Liens.Add(lien);
             }
         }
-
-        public void ChargerDepuisFichier(string cheminFichier)
+        /// <summary>
+        /// charge un graphe à partir d'un fichier texte contenant les arêtes
+        /// </summary>
+        /// <param name="nomFichier">Le chemin du fichier contenant les arêtes.</param>
+        public void ChargerDepuisFichier(string nomFichier)
         {
-            foreach (var ligne in File.ReadLines(cheminFichier))
+            foreach (var ligne in File.ReadLines(nomFichier))
             {
 
                 // Lit les valeurs
@@ -85,7 +92,9 @@ namespace Etape1
         }
 
 
-
+        /// <summary>
+        /// Crée la liste d'adjacence du graphe en fonction des liens entre les noeuds
+        /// </summary>
         public void CreerListeAdjacence()
         {
             listeAdjacence.Clear();
@@ -101,6 +110,9 @@ namespace Etape1
             }
         }
 
+        /// <summary>
+        /// créer la matrice d'adjacence du graphe à partir de la liste des liens
+        /// </summary>
         public void CreerMatriceAdjacence()
         {
             int taille = 34;
@@ -129,7 +141,9 @@ namespace Etape1
         }
 
 
-
+        /// <summary>
+        /// affiche la liste d'adjacence du graphe
+        /// </summary>
         public void AfficherListe()
         {
             foreach (var pair in listeAdjacence)
@@ -138,7 +152,9 @@ namespace Etape1
                 Console.WriteLine(string.Join(", ", pair.Value));
             }
         }
-
+        /// <summary>
+        /// Affiche la matrice d'adjacence du graphe
+        /// </summary>
         public void AfficherMatrice()
         {
             for (int i = 0; i < matriceAdjacence.GetLength(0); i++)
@@ -150,7 +166,11 @@ namespace Etape1
                 Console.WriteLine();
             }
         }
-
+        /// <summary>
+        /// effectue un parcours en profondeur/DFS du graphe
+        /// </summary>
+        /// <param name="start">le noeud de départ</param>
+        /// <returns>une liste des noeuds visités</returns>
         public List<T> DFS(T start)
         {
             List<T> visited = new List<T>();
@@ -177,6 +197,12 @@ namespace Etape1
             }
             return visited;
         }
+
+        /// <summary>
+        /// effectue un parcours en largeur/BFS du graphe
+        /// </summary>
+        /// <param name="depart">le noeud de départ</param>
+        /// <returns>une liste des noeuds visités dans l'ordre du parcours</returns>
         public List<T> BFS(T depart)
         {
             List<T> visited = new List<T>();
@@ -203,7 +229,10 @@ namespace Etape1
             return visited;
         }
 
-
+        /// <summary>
+        /// vérifie si le graphe est connexe
+        /// </summary>
+        /// <returns>Retourne true si tous les noeuds sont connectés et sinon false</returns>
         public bool TestConnexe()
         {
             if (noeuds.Count == 0)
@@ -239,10 +268,72 @@ namespace Etape1
             return visited.Count == noeuds.Count;
         }
 
+        /// <summary>
+        /// vérifie si le graphe contient un cycle
+        /// </summary>
+        /// <returns>True si un cycle est détecté et sinon false</returns>
+        public bool ContientCycle()
+        {
+            Dictionary<T, bool> visite = new Dictionary<T, bool>();
+            Dictionary<T, T> parent = new Dictionary<T, T>();
+
+            foreach (var noeud in noeuds.Keys)
+            {
+                visite[noeud] = false;
+                parent[noeud] = default(T);
+            }
+
+            foreach (var noeud in noeuds.Keys)
+            {
+                if (!visite[noeud])
+                {
+                    if (DetecterCycle(noeud, visite, parent))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        /// <summary>
+        /// Utilise le DFS pour détecter un cycle dans le graphe
+        /// </summary>
+        /// <param name="start">Le noeud de départ</param>
+        /// <param name="visited">Dictionnaire des noeuds visités</param>
+        /// <param name="parent">Dictionnaire des parents des noeuds</param>
+        /// <returns>True si un cycle est détecté et sinon False</returns>
+        private bool DetecterCycle(T start, Dictionary<T, bool> visited, Dictionary<T, T> parent)
+        {
+            List<T> parcours = DFS(start);
+
+            foreach (T noeud in parcours)
+            {
+                visited[noeud] = true;
+                if (!listeAdjacence.ContainsKey(noeud))
+                    continue;
+
+                foreach (T voisin in listeAdjacence[noeud])
+                {
+                    if (!visited[voisin])
+                    {
+                        parent[voisin] = noeud;
+                    }
+                    else if (!voisin.Equals(parent[noeud]))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
 
 
 
-        public void GenererGraphe(string fichierImage)
+        /// <summary>
+        /// Génère une image du graphe et la sauvegarde dans un fichier
+        /// </summary>
+        /// <param name="nomFichier">Le chemin du fichier où enregistrer l'image.</param>
+        public void ImageGraphe(string nomFichier)
         {
             int largeur = 800;
             int hauteur = 600;
@@ -309,18 +400,11 @@ namespace Etape1
 
                 using (var image = SKImage.FromBitmap(bitmap))
                 using (var data = image.Encode(SKEncodedImageFormat.Png, 100))
-                using (var stream = File.OpenWrite(fichierImage))
+                using (var stream = File.OpenWrite(nomFichier))
                 {
                     data.SaveTo(stream);
                 }
-
-                Console.WriteLine($"Image générée : {fichierImage}");
             }
         }
-    }
-}
-
-
-
     }
 }

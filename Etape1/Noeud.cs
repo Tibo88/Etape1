@@ -1,16 +1,18 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace Etape1
 {
     public class Noeud<T>
     {
-        T nom;
-        List<Lien<T>> liens;
+        public T nom;
+        public List<Lien<T>> liens;
 
         public Noeud(T nom)
         {
@@ -30,3 +32,4 @@ namespace Etape1
     }
 
 }
+

@@ -20,9 +20,7 @@ namespace TestProject
         [TestMethod]
         public void TestDFS()
         {
-            var graphe = new Graph<int>();
-
-            // Initialisation manuelle de la liste d'adjacence
+            var graphe = new Graph<int>();            
             graphe.listeAdjacence = new Dictionary<int, List<int>>()
             {
             { 1, new List<int> { 2, 3 } },
@@ -45,8 +43,6 @@ namespace TestProject
         public void TestBFS()
         {
             var graphe = new Graph<int>();
-
-            // Initialisation manuelle de la liste d'adjacence
             graphe.listeAdjacence = new Dictionary<int, List<int>>()
             {
             { 1, new List<int> { 2, 3 } },

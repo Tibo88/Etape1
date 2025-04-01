@@ -13,13 +13,15 @@ namespace Etape1
         public Noeud<T> Destination { get; set; }
         public double TempsTrajet { get; set; }
         public double TempsChangement { get; set; }
+        public double Distance { get; set; }
 
-        public Lien(Noeud<T> source, Noeud<T> destination, double tempsTrajet, double tempsChangement)
+        public Lien(Noeud<T> source, Noeud<T> destination, double tempsTrajet, double tempsChangement, double distance)
         {
             Source = source;
             Destination = destination;
             TempsTrajet = tempsTrajet;
             TempsChangement = tempsChangement;
+            Distance = distance;
         }
     }
 }

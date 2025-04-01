@@ -10,24 +10,25 @@ namespace Etape1
 {
     public class Noeud<T>
     {
-        public T nom;
-        public List<Lien<T>> liens;
+        public T Id { get; }
+        public string Nom { get; }
+        public string LigneLibelle { get; }
+        public double Longitude { get; }
+        public double Latitude { get; }
+        public string Commune { get; }
+        public string CodeInsee { get; }
+        public List<Lien<T>> Liens { get; set; }
 
-        public Noeud(T nom)
+        public Noeud(T id, string nom, string ligneLibelle, double longitude, double latitude, string commune, string codeInsee)
         {
-            this.nom = nom;
+            Id = id;
+            Nom = nom;
+            LigneLibelle = ligneLibelle;
+            Longitude = longitude;
+            Latitude = latitude;
+            Commune = commune;
+            CodeInsee = codeInsee;
+            Liens = new List<Lien<T>>();
         }
-
-        public T Nom
-        {
-            get { return nom ; }
-        }
-        public List<Lien<T>> Liens
-        { 
-            get { return liens ; }
-            set { liens = value ; }
-        }
-
     }
-
 }

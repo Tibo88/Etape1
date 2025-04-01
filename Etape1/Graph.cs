@@ -26,26 +26,37 @@ namespace Etape1
             }
         }
 
-        public void AjouterLien(T idStation1, T idStation2, double tempsTrajet, double tempsChangement)
+        public void AjouterLien(T idStation1, T idStation2, double tempsTrajet, double tempsChangement, double distance)
         {
-            if (!Noeuds.ContainsKey(idStation1) || !Noeuds.ContainsKey(idStation2))
+            // Vérifiez que les deux noeuds existent et qu'ils ne sont pas les mêmes
+            if (!Noeuds.ContainsKey(idStation1) || !Noeuds.ContainsKey(idStation2) || idStation1.Equals(idStation2))
             {
-                Console.WriteLine($"Les noeuds {idStation1} et/ou {idStation2} n'existent pas.");
+                Console.WriteLine($"Les noeuds {idStation1} et/ou {idStation2} n'existent pas ou sont identiques.");
                 return;
             }
 
             var source = Noeuds[idStation1];
             var destination = Noeuds[idStation2];
 
-            var lien = new Lien<T>(source, destination, tempsTrajet, tempsChangement);
+            // Vérifiez que le lien n'existe pas déjà
+            if (source.Liens.Any(l => l.Destination.Id.Equals(destination.Id)))
+            {
+                Console.WriteLine($"Le lien de {idStation1} vers {idStation2} existe déjà.");
+                return;
+            }
+
+            var lien = new Lien<T>(source, destination, tempsTrajet, tempsChangement, distance);
 
             source.Liens.Add(lien);
             if (!EstOriente)
             {
-                destination.Liens.Add(lien);
+                // Vérifiez également que le lien inverse n'existe pas déjà
+                if (!destination.Liens.Any(l => l.Destination.Id.Equals(source.Id)))
+                {
+                    destination.Liens.Add(lien);
+                }
             }
         }
-
         public void ChargerDepuisFichier(string fichierNoeuds, string fichierArcs)
         {
             // Charger les noeuds
@@ -88,13 +99,27 @@ namespace Etape1
                 {
                     try
                     {
-                        T station1Id = (T)Convert.ChangeType(parties[0].Trim(), typeof(T));
-                        T station2Id = (T)Convert.ChangeType(parties[2].Trim(), typeof(T));
+                        T noeudActuelId = (T)Convert.ChangeType(parties[0].Trim(), typeof(T));
+                        T precedentId = (T)Convert.ChangeType(parties[2].Trim(), typeof(T));
+                        T suivantId = (T)Convert.ChangeType(parties[3].Trim(), typeof(T));
                         double tempsTrajet = Convert.ToDouble(parties[4].Trim(), System.Globalization.CultureInfo.InvariantCulture);
                         double tempsChangement = Convert.ToDouble(parties[5].Trim(), System.Globalization.CultureInfo.InvariantCulture);
 
-                        AjouterLien(station1Id, station2Id, tempsTrajet, tempsChangement);
-                        Console.WriteLine($"Arc ajouté: {station1Id} -> {station2Id}");
+                        // Ajouter un lien vers le précédent si ce n'est pas le même noeud et n'est pas 0
+                        if (!precedentId.Equals(0) && !precedentId.Equals(noeudActuelId))
+                        {
+                            double distance = CalculerDistance(noeudActuelId, precedentId);
+                            AjouterLien(noeudActuelId, precedentId, tempsTrajet, tempsChangement, distance);
+                            Console.WriteLine($"Arc ajouté: {noeudActuelId} -> {precedentId}");
+                        }
+
+                        // Ajouter un lien vers le suivant si ce n'est pas le même noeud et n'est pas 0
+                        if (!suivantId.Equals(0) && !suivantId.Equals(noeudActuelId))
+                        {
+                            double distance = CalculerDistance(noeudActuelId, suivantId);
+                            AjouterLien(noeudActuelId, suivantId, tempsTrajet, tempsChangement, distance);
+                            Console.WriteLine($"Arc ajouté: {noeudActuelId} -> {suivantId}");
+                        }
                     }
                     catch (Exception e)
                     {
@@ -109,6 +134,23 @@ namespace Etape1
         }
 
 
+        private double CalculerDistance(T id1, T id2)
+        {
+            var noeud1 = Noeuds[id1];
+            var noeud2 = Noeuds[id2];
+
+            double phi1 = noeud1.Latitude * Math.PI / 180;
+            double phi2 = noeud2.Latitude * Math.PI / 180;
+            double deltaPhi = (noeud2.Latitude - noeud1.Latitude) * Math.PI / 180;
+            double deltaLambda = (noeud2.Longitude - noeud1.Longitude) * Math.PI / 180;
+
+            double a = Math.Sin(deltaPhi / 2) * Math.Sin(deltaPhi / 2) +
+                       Math.Cos(phi1) * Math.Cos(phi2) * Math.Sin(deltaLambda / 2) * Math.Sin(deltaLambda / 2);
+            double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+
+            const double R = 6371; // Rayon moyen de la Terre en km
+            return R * c;
+        }
 
         public void CreerListeAdjacence()
         {
@@ -120,7 +162,11 @@ namespace Etape1
 
                 foreach (var lien in noeud.Liens)
                 {
-                    voisins.Add(lien.Destination.Id);
+                    // Ajouter uniquement les voisins qui ne sont pas le noeud lui-même
+                    if (!lien.Destination.Id.Equals(noeud.Id))
+                    {
+                        voisins.Add(lien.Destination.Id);
+                    }
                 }
 
                 ListeAdjacence[noeud.Id] = voisins;
@@ -329,3 +375,4 @@ namespace Etape1
         }
     }
 }
+

@@ -10,7 +10,7 @@ class Program
     static void Main()
     {
         Graph<int> graphe = new Graph<int>();
-        graphe.ChargerDepuisFichier("soc-karate.txt");
+        graphe.ChargerDepuisFichier("Noeuds2.txt", "Arcs2.txt");
 
         Console.WriteLine("Liste d'adjacence:");
         graphe.CreerListeAdjacence();
@@ -35,12 +35,7 @@ class Program
         }
         Console.WriteLine();
 
-        //Afficher le graphe
-        string imagePath = "graph.png";
-        graphe.ImageGraphe(imagePath);
-        Console.WriteLine($"Image du graphe générée : {imagePath}");
-        Process.Start(new ProcessStartInfo(imagePath) { UseShellExecute = true });
-
+        
         Console.WriteLine();
 
         //on vérifie si le graphe est connexe

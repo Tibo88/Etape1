@@ -9,23 +9,17 @@ namespace Etape1
 {
     public class Lien<T>
     {
-        public Noeud<T> source;
-        public Noeud<T> destination;
+        public Noeud<T> Source { get; set; }
+        public Noeud<T> Destination { get; set; }
+        public double TempsTrajet { get; set; }
+        public double TempsChangement { get; set; }
 
-        public Lien(Noeud<T> source, Noeud<T> destination)
+        public Lien(Noeud<T> source, Noeud<T> destination, double tempsTrajet, double tempsChangement)
         {
-            this.source = source;
-            this.destination = destination;
-        }
-
-        public Noeud<T> Source
-        {
-            get { return source; }
-        }
-
-        public Noeud<T> Destination
-        {
-            get { return destination;  }
+            Source = source;
+            Destination = destination;
+            TempsTrajet = tempsTrajet;
+            TempsChangement = tempsChangement;
         }
     }
 }

@@ -1,176 +1,190 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SkiaSharp;
+using System.IO;
 
 namespace Etape1
 {
     public class Graph<T>
     {
-        public Dictionary<T, Noeud<T>> noeuds { get; }
-
+        public Dictionary<T, Noeud<T>> Noeuds { get; }
         public bool EstOriente { get; }
-        public Dictionary<T, List<T>> listeAdjacence;
-        public int[,] matriceAdjacence;
+        public Dictionary<T, List<T>> ListeAdjacence { get; private set; }
+        public double[,] MatriceAdjacence { get; private set; }
 
         public Graph(bool estOriente = false)
         {
-            noeuds = new Dictionary<T, Noeud<T>>();
+            Noeuds = new Dictionary<T, Noeud<T>>();
             EstOriente = estOriente;
-            listeAdjacence = new Dictionary<T, List<T>>();
+            ListeAdjacence = new Dictionary<T, List<T>>();
         }
 
-        public Dictionary<T, List<T>> ListeAdjacence
+        public void AjouterNoeud(T id, string libelle, string ligneLibelle, double longitude, double latitude, string commune, string codeCommune)
         {
-            get { return listeAdjacence; }
-        }
-
-        /// <summary>
-        /// ajoute un lien entre deux noeuds du graphe
-        /// </summary>
-        /// <param name="valeur1">Le premier nœud.</param>
-        /// <param name="valeur2">Le second nœud.</param>
-        public void AjouterLien(T valeur1, T valeur2)
-        {
-            if (!noeuds.ContainsKey(valeur1))
-                noeuds[valeur1] = new Noeud<T>(valeur1);
-            if (!noeuds.ContainsKey(valeur2))
-                noeuds[valeur2] = new Noeud<T>(valeur2);
-
-            var noeud1 = noeuds[valeur1];
-            var noeud2 = noeuds[valeur2];
-
-            if (noeud1 == null || noeud2 == null)
+            if (!Noeuds.ContainsKey(id))
             {
-                throw new InvalidOperationException("Erreur : ajout d'un noeud null");
+                Noeuds[id] = new Noeud<T>(id, libelle, ligneLibelle, longitude, latitude, commune, codeCommune);
+            }
+        }
+
+        public void AjouterLien(T idStation1, T idStation2, double tempsTrajet, double tempsChangement)
+        {
+            if (!Noeuds.ContainsKey(idStation1) || !Noeuds.ContainsKey(idStation2))
+            {
+                Console.WriteLine($"Les noeuds {idStation1} et/ou {idStation2} n'existent pas.");
+                return;
             }
 
-            var lien = new Lien<T>(noeud1, noeud2);
+            var source = Noeuds[idStation1];
+            var destination = Noeuds[idStation2];
 
-            if (noeud1.Liens == null)
-                noeud1.Liens = new List<Lien<T>>();
+            var lien = new Lien<T>(source, destination, tempsTrajet, tempsChangement);
 
-            noeud1.Liens.Add(lien);
-
+            source.Liens.Add(lien);
             if (!EstOriente)
             {
-                if (noeud2.Liens == null)
-                    noeud2.Liens = new List<Lien<T>>();
-
-                noeud2.Liens.Add(lien);
+                destination.Liens.Add(lien);
             }
         }
-        /// <summary>
-        /// charge un graphe à partir d'un fichier texte contenant les arêtes
-        /// </summary>
-        /// <param name="nomFichier">Le chemin du fichier contenant les arêtes.</param>
-        public void ChargerDepuisFichier(string nomFichier)
-        {
-            foreach (var ligne in File.ReadLines(nomFichier))
-            {
 
-                // Lit les valeurs
-                var parties = ligne.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-                if (parties.Length == 2)
+        public void ChargerDepuisFichier(string fichierNoeuds, string fichierArcs)
+        {
+            // Charger les noeuds
+            Console.WriteLine("Chargement des noeuds...");
+            foreach (var ligne in File.ReadLines(fichierNoeuds).Skip(1))
+            {
+                var parties = ligne.Split(',');
+                if (parties.Length >= 7)
                 {
                     try
                     {
-                        T v1 = (T)Convert.ChangeType(parties[0], typeof(T));
-                        T v2 = (T)Convert.ChangeType(parties[1], typeof(T));
+                        T id = (T)Convert.ChangeType(parties[0].Trim(), typeof(T));
+                        string nom = parties[2].Trim();
+                        string ligneMetro = parties[1].Trim();
+                        double longitude = Convert.ToDouble(parties[3].Trim(), System.Globalization.CultureInfo.InvariantCulture);
+                        double latitude = Convert.ToDouble(parties[4].Trim(), System.Globalization.CultureInfo.InvariantCulture);
+                        string commune = parties[5].Trim();
+                        string codeInsee = parties[6].Trim();
 
-                        AjouterLien(v1, v2);
+                        AjouterNoeud(id, nom, ligneMetro, longitude, latitude, commune, codeInsee);
+                        Console.WriteLine($"Noeud ajouté: {id}");
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine($"Erreur de conversion pour la ligne : {ligne} ({e.Message})");
+                        Console.WriteLine($"Erreur lors de la lecture du fichier de noeuds: {e.Message}, Ligne: {ligne}");
                     }
+                }
+                else
+                {
+                    Console.WriteLine($"Format incorrect pour la ligne: {ligne}");
+                }
+            }
+
+            // Charger les arcs avec les poids (temps de trajet et de changement)
+            Console.WriteLine("Chargement des arcs...");
+            foreach (var ligne in File.ReadLines(fichierArcs).Skip(1))
+            {
+                var parties = ligne.Split(',');
+                if (parties.Length >= 6)
+                {
+                    try
+                    {
+                        T station1Id = (T)Convert.ChangeType(parties[0].Trim(), typeof(T));
+                        T station2Id = (T)Convert.ChangeType(parties[2].Trim(), typeof(T));
+                        double tempsTrajet = Convert.ToDouble(parties[4].Trim(), System.Globalization.CultureInfo.InvariantCulture);
+                        double tempsChangement = Convert.ToDouble(parties[5].Trim(), System.Globalization.CultureInfo.InvariantCulture);
+
+                        AjouterLien(station1Id, station2Id, tempsTrajet, tempsChangement);
+                        Console.WriteLine($"Arc ajouté: {station1Id} -> {station2Id}");
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"Erreur lors de la lecture du fichier des arcs: {e.Message}, Ligne: {ligne}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Format incorrect pour la ligne: {ligne}");
                 }
             }
         }
 
 
-        /// <summary>
-        /// Crée la liste d'adjacence du graphe en fonction des liens entre les noeuds
-        /// </summary>
+
         public void CreerListeAdjacence()
         {
-            listeAdjacence.Clear();
-            foreach (var noeud in noeuds.Values)
+            ListeAdjacence.Clear();
+
+            foreach (var noeud in Noeuds.Values)
             {
                 var voisins = new List<T>();
+
                 foreach (var lien in noeud.Liens)
                 {
-                    T voisinValeur = lien.Source.Equals(noeud) ? lien.Destination.Nom : lien.Source.Nom;
-                    voisins.Add(voisinValeur);
+                    voisins.Add(lien.Destination.Id);
                 }
-                listeAdjacence[noeud.Nom] = voisins;
+
+                ListeAdjacence[noeud.Id] = voisins;
             }
         }
 
-        /// <summary>
-        /// créer la matrice d'adjacence du graphe à partir de la liste des liens
-        /// </summary>
         public void CreerMatriceAdjacence()
         {
-            int taille = 34;
-            matriceAdjacence = new int[taille, taille];
+            int taille = Noeuds.Count;
+            MatriceAdjacence = new double[taille, taille];
 
-
-            foreach (var noeud in noeuds.Values)
+            var idToIndex = new Dictionary<T, int>();
+            int index = 0;
+            foreach (var noeud in Noeuds.Values)
             {
-                int i = Convert.ToInt32(noeud.Nom) - 1;
+                idToIndex[noeud.Id] = index++;
+            }
+
+            for (int i = 0; i < taille; i++)
+            {
+                for (int j = 0; j < taille; j++)
+                {
+                    MatriceAdjacence[i, j] = double.MaxValue;
+                }
+            }
+
+            foreach (var noeud in Noeuds.Values)
+            {
+                int i = idToIndex[noeud.Id];
 
                 foreach (var lien in noeud.Liens)
                 {
-                    int j = Convert.ToInt32(lien.Destination.Nom) - 1;
+                    int j = idToIndex[lien.Destination.Id];
 
-                    if (i != j)
+                    MatriceAdjacence[i, j] = lien.TempsTrajet;
+                    if (!EstOriente)
                     {
-                        matriceAdjacence[i, j] = 1;
-                        if (!EstOriente)
-                        {
-                            matriceAdjacence[j, i] = 1;
-                        }
+                        MatriceAdjacence[j, i] = lien.TempsTrajet;
                     }
                 }
             }
-            AfficherMatrice();
         }
 
-
-        /// <summary>
-        /// affiche la liste d'adjacence du graphe
-        /// </summary>
         public void AfficherListe()
         {
-            foreach (var pair in listeAdjacence)
+            foreach (var pair in ListeAdjacence)
             {
                 Console.Write(pair.Key + " -> ");
                 Console.WriteLine(string.Join(", ", pair.Value));
             }
         }
-        /// <summary>
-        /// Affiche la matrice d'adjacence du graphe
-        /// </summary>
+
         public void AfficherMatrice()
         {
-            for (int i = 0; i < matriceAdjacence.GetLength(0); i++)
+            for (int i = 0; i < MatriceAdjacence.GetLength(0); i++)
             {
-                for (int j = 0; j < matriceAdjacence.GetLength(1); j++)
+                for (int j = 0; j < MatriceAdjacence.GetLength(1); j++)
                 {
-                    Console.Write(matriceAdjacence[i, j] + " ");
+                    Console.Write(MatriceAdjacence[i, j] + " ");
                 }
                 Console.WriteLine();
             }
         }
-        /// <summary>
-        /// effectue un parcours en profondeur/DFS du graphe
-        /// </summary>
-        /// <param name="start">le noeud de départ</param>
-        /// <returns>une liste des noeuds visités</returns>
+
         public List<T> DFS(T start)
         {
             List<T> visited = new List<T>();
@@ -183,9 +197,9 @@ namespace Etape1
                 if (!visited.Contains(courant))
                 {
                     visited.Add(courant);
-                    if (listeAdjacence.ContainsKey(courant))
+                    if (ListeAdjacence.ContainsKey(courant))
                     {
-                        foreach (T voisin in listeAdjacence[courant])
+                        foreach (T voisin in ListeAdjacence[courant])
                         {
                             if (!visited.Contains(voisin))
                             {
@@ -198,11 +212,6 @@ namespace Etape1
             return visited;
         }
 
-        /// <summary>
-        /// effectue un parcours en largeur/BFS du graphe
-        /// </summary>
-        /// <param name="depart">le noeud de départ</param>
-        /// <returns>une liste des noeuds visités dans l'ordre du parcours</returns>
         public List<T> BFS(T depart)
         {
             List<T> visited = new List<T>();
@@ -214,9 +223,9 @@ namespace Etape1
             while (file.Count > 0)
             {
                 T courant = file.Dequeue();
-                if (listeAdjacence.ContainsKey(courant))
+                if (ListeAdjacence.ContainsKey(courant))
                 {
-                    foreach (T voisin in listeAdjacence[courant])
+                    foreach (T voisin in ListeAdjacence[courant])
                     {
                         if (!visited.Contains(voisin))
                         {
@@ -229,13 +238,9 @@ namespace Etape1
             return visited;
         }
 
-        /// <summary>
-        /// vérifie si le graphe est connexe
-        /// </summary>
-        /// <returns>Retourne true si tous les noeuds sont connectés et sinon false</returns>
         public bool TestConnexe()
         {
-            if (noeuds.Count == 0)
+            if (Noeuds.Count == 0)
             {
                 return false;
             }
@@ -243,7 +248,7 @@ namespace Etape1
             List<T> visited = new List<T>();
             List<T> aExplorer = new List<T>();
 
-            T premierNoeud = noeuds.Keys.First();
+            T premierNoeud = Noeuds.Keys.First();
             aExplorer.Add(premierNoeud);
             visited.Add(premierNoeud);
 
@@ -252,9 +257,9 @@ namespace Etape1
                 T courant = aExplorer[0];
                 aExplorer.RemoveAt(0);
 
-                if (listeAdjacence.ContainsKey(courant))
+                if (ListeAdjacence.ContainsKey(courant))
                 {
-                    foreach (T voisin in listeAdjacence[courant])
+                    foreach (T voisin in ListeAdjacence[courant])
                     {
                         if (!visited.Contains(voisin))
                         {
@@ -265,25 +270,21 @@ namespace Etape1
                 }
             }
 
-            return visited.Count == noeuds.Count;
+            return visited.Count == Noeuds.Count;
         }
 
-        /// <summary>
-        /// vérifie si le graphe contient un cycle
-        /// </summary>
-        /// <returns>True si un cycle est détecté et sinon false</returns>
         public bool ContientCycle()
         {
             Dictionary<T, bool> visite = new Dictionary<T, bool>();
             Dictionary<T, T> parent = new Dictionary<T, T>();
 
-            foreach (var noeud in noeuds.Keys)
+            foreach (var noeud in Noeuds.Keys)
             {
                 visite[noeud] = false;
                 parent[noeud] = default(T);
             }
 
-            foreach (var noeud in noeuds.Keys)
+            foreach (var noeud in Noeuds.Keys)
             {
                 if (!visite[noeud])
                 {
@@ -295,117 +296,36 @@ namespace Etape1
             }
             return false;
         }
-        /// <summary>
-        /// Utilise le DFS pour détecter un cycle dans le graphe
-        /// </summary>
-        /// <param name="start">Le noeud de départ</param>
-        /// <param name="visited">Dictionnaire des noeuds visités</param>
-        /// <param name="parent">Dictionnaire des parents des noeuds</param>
-        /// <returns>True si un cycle est détecté et sinon False</returns>
+
         private bool DetecterCycle(T start, Dictionary<T, bool> visited, Dictionary<T, T> parent)
         {
-            List<T> parcours = DFS(start);
+            Stack<T> pile = new Stack<T>();
+            pile.Push(start);
 
-            foreach (T noeud in parcours)
+            while (pile.Count > 0)
             {
-                visited[noeud] = true;
-                if (!listeAdjacence.ContainsKey(noeud))
-                    continue;
-
-                foreach (T voisin in listeAdjacence[noeud])
+                T courant = pile.Pop();
+                if (!visited[courant])
                 {
-                    if (!visited[voisin])
+                    visited[courant] = true;
+                    if (ListeAdjacence.ContainsKey(courant))
                     {
-                        parent[voisin] = noeud;
-                    }
-                    else if (!voisin.Equals(parent[noeud]))
-                    {
-                        return true;
+                        foreach (T voisin in ListeAdjacence[courant])
+                        {
+                            if (!visited[voisin])
+                            {
+                                parent[voisin] = courant;
+                                pile.Push(voisin);
+                            }
+                            else if (!voisin.Equals(parent[courant]))
+                            {
+                                return true;
+                            }
+                        }
                     }
                 }
             }
             return false;
         }
-
-
-
-        /// <summary>
-        /// Génère une image du graphe et la sauvegarde dans un fichier
-        /// </summary>
-        /// <param name="nomFichier">Le chemin du fichier où enregistrer l'image.</param>
-        public void ImageGraphe(string nomFichier)
-        {
-            int largeur = 1000;
-            int hauteur = 800;
-
-            using (var bitmap = new SKBitmap(largeur, hauteur))
-            using (var canvas = new SKCanvas(bitmap))
-            {
-                canvas.Clear(SKColors.White);
-                var paintLien = new SKPaint { Color = SKColors.Black, StrokeWidth = 2, IsAntialias = true };
-                var paintNoeud = new SKPaint { Color = SKColors.Red, IsAntialias = true };
-                var paintTexte = new SKPaint { Color = SKColors.Black, TextSize = 20, IsAntialias = true };
-
-                Dictionary<T, int> degres = noeuds.ToDictionary(n => n.Key, n => n.Value.Liens.Count);
-                var noeudsTries = noeuds.Keys.OrderByDescending(n => degres[n]).ToList();
-                Dictionary<T, SKPoint> positions = new Dictionary<T, SKPoint>();
-                
-                int centreX = largeur / 2;
-                int centreY = hauteur / 2;
-                int rayonMax = Math.Min(largeur, hauteur) / 3;
-                int espaceMin = 80;
-
-                for (int i = 0; i < noeudsTries.Count; i++)
-                {
-                    double angle = (2 * Math.PI * i) / noeudsTries.Count;
-                    int rayon = rayonMax - (degres[noeudsTries[i]] * 10);
-                    bool collision;
-                    SKPoint tentativePosition;
-                    int essais = 0;
-
-                    do
-                    {
-                        tentativePosition = new SKPoint(
-                            centreX + (float)(rayon * Math.Cos(angle)),
-                            centreY + (float)(rayon * Math.Sin(angle))
-                        );
-                        collision = positions.Values.Any(p => SKPoint.Distance(p, tentativePosition) < espaceMin);
-                        essais++;
-                        rayon += 20;
-                    } while (collision && essais < 20);
-
-                    positions[noeudsTries[i]] = tentativePosition;
-                }
-
-                foreach (var noeud in noeuds.Values)
-                {
-                    foreach (var lien in noeud.Liens)
-                    {
-                        if (positions.ContainsKey(noeud.Nom) && positions.ContainsKey(lien.Destination.Nom))
-                        {
-                            canvas.DrawLine(positions[noeud.Nom], positions[lien.Destination.Nom], paintLien);
-                        }
-                    }
-                }
-
-                foreach (var noeud in noeuds.Values)
-                {
-                    if (positions.ContainsKey(noeud.Nom))
-                    {
-                        var position = positions[noeud.Nom];
-                        canvas.DrawCircle(position, 20, paintNoeud);
-                        canvas.DrawText(noeud.Nom.ToString(), position.X - 10, position.Y + 5, paintTexte);
-                    }
-                }
-
-                using (var image = SKImage.FromBitmap(bitmap))
-                using (var data = image.Encode(SKEncodedImageFormat.Png, 100))
-                using (var stream = File.OpenWrite(nomFichier))
-                {
-                    data.SaveTo(stream);
-                }
-            }
-        }
     }
 }
-

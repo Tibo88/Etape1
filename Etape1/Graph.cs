@@ -10,12 +10,14 @@ namespace Etape1
         public bool EstOriente { get; }
         public Dictionary<T, List<T>> ListeAdjacence { get; private set; }
         public double[,] MatriceAdjacence { get; private set; }
+        private Dictionary<string, List<T>> StationsParNom { get; set; }
 
         public Graph(bool estOriente = false)
         {
             Noeuds = new Dictionary<T, Noeud<T>>();
             EstOriente = estOriente;
             ListeAdjacence = new Dictionary<T, List<T>>();
+            StationsParNom = new Dictionary<string, List<T>>();
         }
 
         public void AjouterNoeud(T id, string libelle, string ligneLibelle, double longitude, double latitude, string commune, string codeCommune)
@@ -23,8 +25,16 @@ namespace Etape1
             if (!Noeuds.ContainsKey(id))
             {
                 Noeuds[id] = new Noeud<T>(id, libelle, ligneLibelle, longitude, latitude, commune, codeCommune);
+
+                // Ajouter le noeud au groupe de noms
+                if (!StationsParNom.ContainsKey(libelle))
+                {
+                    StationsParNom[libelle] = new List<T>();
+                }
+                StationsParNom[libelle].Add(id);
             }
         }
+
 
         public void AjouterLien(T idStation1, T idStation2, double tempsTrajet, double tempsChangement, double distance)
         {
@@ -156,22 +166,33 @@ namespace Etape1
         {
             ListeAdjacence.Clear();
 
-            foreach (var noeud in Noeuds.Values)
+            foreach (var groupeNom in StationsParNom.Values)
             {
-                var voisins = new List<T>();
+                var voisinsCommuns = new HashSet<T>();
 
-                foreach (var lien in noeud.Liens)
+                foreach (var noeudId in groupeNom)
                 {
-                    // Ajouter uniquement les voisins qui ne sont pas le noeud lui-même
-                    if (!lien.Destination.Id.Equals(noeud.Id))
+                    var noeud = Noeuds[noeudId];
+                    foreach (var lien in noeud.Liens)
                     {
-                        voisins.Add(lien.Destination.Id);
+                        // Ajouter uniquement les voisins qui ne sont pas le noeud lui-même et n'ont pas le même nom
+                        if (!lien.Destination.Id.Equals(noeud.Id) && !noeud.Nom.Equals(lien.Destination.Nom))
+                        {
+                            voisinsCommuns.Add(lien.Destination.Id);
+                        }
                     }
                 }
 
-                ListeAdjacence[noeud.Id] = voisins;
+                foreach (var noeudId in groupeNom)
+                {
+                    // Filtrer les voisins pour exclure ceux ayant le même nom que le noeud actuel
+                    var voisinsFiltres = voisinsCommuns.Where(v => !Noeuds[v].Nom.Equals(Noeuds[noeudId].Nom)).ToList();
+                    ListeAdjacence[noeudId] = voisinsFiltres;
+                }
             }
         }
+
+
 
         public void CreerMatriceAdjacence()
         {
@@ -212,12 +233,31 @@ namespace Etape1
 
         public void AfficherListe()
         {
-            foreach (var pair in ListeAdjacence)
+            Console.WriteLine("Liste d'adjacence :");
+
+            // Trier les clés de la liste d'adjacence
+            var keysSorted = ListeAdjacence.Keys.ToList();
+            keysSorted.Sort();
+
+            foreach (var key in keysSorted)
             {
-                Console.Write(pair.Key + " -> ");
-                Console.WriteLine(string.Join(", ", pair.Value));
+                Console.Write(key + " -> ");
+
+                // Trier les voisins avant de les afficher
+                var voisinsSorted = ListeAdjacence[key].ToList();
+                voisinsSorted.Sort();
+
+                if (voisinsSorted.Count > 0)
+                {
+                    Console.WriteLine(string.Join(", ", voisinsSorted));
+                }
+                else
+                {
+                    Console.WriteLine("Aucun");
+                }
             }
         }
+
 
         public void AfficherMatrice()
         {
@@ -375,4 +415,5 @@ namespace Etape1
         }
     }
 }
+
 

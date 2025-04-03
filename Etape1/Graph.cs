@@ -143,6 +143,36 @@ namespace Etape1
             }
         }
 
+        public void AjouterLiensManquants()
+        {
+            foreach (var groupeNom in StationsParNom.Values)
+            {
+                // Créer des liens entre chaque paire de stations dans le groupe
+                for (int i = 0; i < groupeNom.Count; i++)
+                {
+                    for (int j = i + 1; j < groupeNom.Count; j++)
+                    {
+                        var idStation1 = groupeNom[i];
+                        var idStation2 = groupeNom[j];
+
+                        // Ajouter un lien dans les deux sens si le graphe n'est pas orienté
+                        double tempsTrajet = 0; // Vous pouvez définir un temps de trajet par défaut pour les changements de ligne
+                        double tempsChangement = 5; // Exemple de temps de changement, à ajuster selon vos besoins
+                        double distance = 0; // La distance peut être nulle ou une valeur par défaut pour les changements de ligne
+
+                        AjouterLien(idStation1, idStation2, tempsTrajet, tempsChangement, distance);
+
+                        if (!EstOriente)
+                        {
+                            AjouterLien(idStation2, idStation1, tempsTrajet, tempsChangement, distance);
+                        }
+                    }
+                }
+            }
+        }
+
+
+
 
         private double CalculerDistance(T id1, T id2)
         {
@@ -194,42 +224,7 @@ namespace Etape1
 
 
 
-        public void CreerMatriceAdjacence()
-        {
-            int taille = Noeuds.Count;
-            MatriceAdjacence = new double[taille, taille];
-
-            var idToIndex = new Dictionary<T, int>();
-            int index = 0;
-            foreach (var noeud in Noeuds.Values)
-            {
-                idToIndex[noeud.Id] = index++;
-            }
-
-            for (int i = 0; i < taille; i++)
-            {
-                for (int j = 0; j < taille; j++)
-                {
-                    MatriceAdjacence[i, j] = double.MaxValue;
-                }
-            }
-
-            foreach (var noeud in Noeuds.Values)
-            {
-                int i = idToIndex[noeud.Id];
-
-                foreach (var lien in noeud.Liens)
-                {
-                    int j = idToIndex[lien.Destination.Id];
-
-                    MatriceAdjacence[i, j] = lien.TempsTrajet;
-                    if (!EstOriente)
-                    {
-                        MatriceAdjacence[j, i] = lien.TempsTrajet;
-                    }
-                }
-            }
-        }
+        
 
         public void AfficherListe()
         {
@@ -259,161 +254,133 @@ namespace Etape1
         }
 
 
-        public void AfficherMatrice()
+        public List<T> Dijkstra(T start, T end)
         {
-            for (int i = 0; i < MatriceAdjacence.GetLength(0); i++)
-            {
-                for (int j = 0; j < MatriceAdjacence.GetLength(1); j++)
-                {
-                    Console.Write(MatriceAdjacence[i, j] + " ");
-                }
-                Console.WriteLine();
-            }
-        }
-
-        public List<T> DFS(T start)
-        {
-            List<T> visited = new List<T>();
-            Stack<T> pile = new Stack<T>();
-            pile.Push(start);
-
-            while (pile.Count > 0)
-            {
-                T courant = pile.Pop();
-                if (!visited.Contains(courant))
-                {
-                    visited.Add(courant);
-                    if (ListeAdjacence.ContainsKey(courant))
-                    {
-                        foreach (T voisin in ListeAdjacence[courant])
-                        {
-                            if (!visited.Contains(voisin))
-                            {
-                                pile.Push(voisin);
-                            }
-                        }
-                    }
-                }
-            }
-            return visited;
-        }
-
-        public List<T> BFS(T depart)
-        {
-            List<T> visited = new List<T>();
-            Queue<T> file = new Queue<T>();
-
-            file.Enqueue(depart);
-            visited.Add(depart);
-
-            while (file.Count > 0)
-            {
-                T courant = file.Dequeue();
-                if (ListeAdjacence.ContainsKey(courant))
-                {
-                    foreach (T voisin in ListeAdjacence[courant])
-                    {
-                        if (!visited.Contains(voisin))
-                        {
-                            file.Enqueue(voisin);
-                            visited.Add(voisin);
-                        }
-                    }
-                }
-            }
-            return visited;
-        }
-
-        public bool TestConnexe()
-        {
-            if (Noeuds.Count == 0)
-            {
-                return false;
-            }
-
-            List<T> visited = new List<T>();
-            List<T> aExplorer = new List<T>();
-
-            T premierNoeud = Noeuds.Keys.First();
-            aExplorer.Add(premierNoeud);
-            visited.Add(premierNoeud);
-
-            while (aExplorer.Count > 0)
-            {
-                T courant = aExplorer[0];
-                aExplorer.RemoveAt(0);
-
-                if (ListeAdjacence.ContainsKey(courant))
-                {
-                    foreach (T voisin in ListeAdjacence[courant])
-                    {
-                        if (!visited.Contains(voisin))
-                        {
-                            visited.Add(voisin);
-                            aExplorer.Add(voisin);
-                        }
-                    }
-                }
-            }
-
-            return visited.Count == Noeuds.Count;
-        }
-
-        public bool ContientCycle()
-        {
-            Dictionary<T, bool> visite = new Dictionary<T, bool>();
-            Dictionary<T, T> parent = new Dictionary<T, T>();
+            var distances = new Dictionary<T, double>();
+            var previousNodes = new Dictionary<T, T>();
+            var priorityQueue = new SortedSet<(T Node, double Distance)>();
 
             foreach (var noeud in Noeuds.Keys)
             {
-                visite[noeud] = false;
-                parent[noeud] = default(T);
+                distances[noeud] = double.MaxValue;
+                previousNodes[noeud] = default(T);
+                priorityQueue.Add((noeud, double.MaxValue));
             }
 
-            foreach (var noeud in Noeuds.Keys)
+            distances[start] = 0;
+            priorityQueue.Remove((start, double.MaxValue));
+            priorityQueue.Add((start, 0));
+
+            while (priorityQueue.Count > 0)
             {
-                if (!visite[noeud])
+                var (currentNode, currentDistance) = priorityQueue.First();
+                priorityQueue.Remove((currentNode, currentDistance));
+
+                if (currentNode.Equals(end))
                 {
-                    if (DetecterCycle(noeud, visite, parent))
-                    {
-                        return true;
-                    }
+                    break; // Arrêter si le noeud de destination est atteint
                 }
-            }
-            return false;
-        }
 
-        private bool DetecterCycle(T start, Dictionary<T, bool> visited, Dictionary<T, T> parent)
-        {
-            Stack<T> pile = new Stack<T>();
-            pile.Push(start);
-
-            while (pile.Count > 0)
-            {
-                T courant = pile.Pop();
-                if (!visited[courant])
+                if (currentDistance > distances[currentNode])
                 {
-                    visited[courant] = true;
-                    if (ListeAdjacence.ContainsKey(courant))
+                    continue; // Ignorer les anciennes distances
+                }
+
+                // Utiliser la liste d'adjacence pour trouver les voisins
+                if (ListeAdjacence.ContainsKey(currentNode))
+                {
+                    foreach (var neighbor in ListeAdjacence[currentNode])
                     {
-                        foreach (T voisin in ListeAdjacence[courant])
+                        var newDistance = currentDistance + GetTempsTrajet(currentNode, neighbor);
+
+                        if (newDistance < distances[neighbor])
                         {
-                            if (!visited[voisin])
-                            {
-                                parent[voisin] = courant;
-                                pile.Push(voisin);
-                            }
-                            else if (!voisin.Equals(parent[courant]))
-                            {
-                                return true;
-                            }
+                            distances[neighbor] = newDistance;
+                            previousNodes[neighbor] = currentNode;
+                            priorityQueue.Remove((neighbor, distances[neighbor]));
+                            priorityQueue.Add((neighbor, newDistance));
                         }
                     }
                 }
             }
-            return false;
+
+            return ReconstructPath(previousNodes, start, end);
         }
+
+        private List<T> ReconstructPath(Dictionary<T, T> previousNodes, T start, T end)
+        {
+            var path = new List<T>();
+            var equalityComparer = EqualityComparer<T>.Default;
+
+            for (var step = end; !equalityComparer.Equals(step, start); step = previousNodes.ContainsKey(step) ? previousNodes[step] : default(T))
+            {
+                if (!equalityComparer.Equals(step, default(T)))
+                {
+                    path.Add(step);
+                }
+                else
+                {
+                    Console.WriteLine($"Erreur : Chemin non trouvé pour le noeud {end}.");
+                    return null;
+                }
+            }
+
+            path.Add(start);
+            path.Reverse();
+            return path;
+        }
+
+        private double GetTempsTrajet(T depart, T arrivee)
+        {
+            var lien = Noeuds[depart].Liens.FirstOrDefault(l => l.Destination.Id.Equals(arrivee));
+            return lien != null ? lien.TempsTrajet : double.MaxValue;
+        }
+
+        
+
+        public double CalculerTempsTrajet(List<T> chemin)
+        {
+            double tempsTotal = 0;
+
+            for (int i = 0; i < chemin.Count - 1; i++)
+            {
+                T depart = chemin[i];
+                T arrivee = chemin[i + 1];
+
+                // Trouver le lien entre les deux stations
+                var lien = Noeuds[depart].Liens.FirstOrDefault(l => l.Destination.Id.Equals(arrivee));
+
+                if (lien != null)
+                {
+                    tempsTotal += lien.TempsTrajet;
+                }
+                else
+                {
+                    Console.WriteLine($"Aucun lien trouvé entre {depart} et {arrivee}.");
+                    return -1; // Retourner -1 ou une autre valeur d'erreur si un lien est manquant
+                }
+            }
+
+            return tempsTotal;
+        }
+
+
+
+        public void AfficherChemin(List<T> chemin)
+        {
+            if (chemin == null || chemin.Count == 0)
+            {
+                Console.WriteLine("Aucun chemin trouvé.");
+                return;
+            }
+
+            Console.WriteLine("Chemin trouvé :");
+            foreach (var noeud in chemin)
+            {
+                Console.Write(noeud + " ");
+            }
+            Console.WriteLine();
+        }
+
     }
 }
-
-

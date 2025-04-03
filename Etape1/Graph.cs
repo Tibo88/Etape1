@@ -1,8 +1,9 @@
+using Etape2;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Etape1
+namespace Etape2
 {
     public class Graph<T>
     {
@@ -34,6 +35,7 @@ namespace Etape1
                 StationsParNom[libelle].Add(id);
             }
         }
+
 
 
         public void AjouterLien(T idStation1, T idStation2, double tempsTrajet, double tempsChangement, double distance)
@@ -224,7 +226,7 @@ namespace Etape1
 
 
 
-        
+
 
         public void AfficherListe()
         {
@@ -258,61 +260,74 @@ namespace Etape1
         {
             var distances = new Dictionary<T, double>();
             var previousNodes = new Dictionary<T, T>();
-            var priorityQueue = new SortedSet<(T Node, double Distance)>();
+            var priorityQueue = new SortedDictionary<double, List<T>>();
 
+            // Initialisation
             foreach (var noeud in Noeuds.Keys)
             {
-                distances[noeud] = double.MaxValue;
-                previousNodes[noeud] = default(T);
-                priorityQueue.Add((noeud, double.MaxValue));
+                distances[noeud] = double.MaxValue;  // Distance infinie par défaut
+                previousNodes[noeud] = default(T);  // Pas de prédécesseur
             }
 
             distances[start] = 0;
-            priorityQueue.Remove((start, double.MaxValue));
-            priorityQueue.Add((start, 0));
+            priorityQueue[0] = new List<T> { start };
 
             while (priorityQueue.Count > 0)
             {
-                var (currentNode, currentDistance) = priorityQueue.First();
-                priorityQueue.Remove((currentNode, currentDistance));
+                // Récupère le nœud avec la plus petite distance
+                var currentDistance = priorityQueue.Keys.First();
+                var currentNode = priorityQueue[currentDistance].First();
+                priorityQueue[currentDistance].RemoveAt(0);
 
+                if (priorityQueue[currentDistance].Count == 0)
+                {
+                    priorityQueue.Remove(currentDistance);
+                }
+
+                // Si on atteint la destination, on arrête
                 if (currentNode.Equals(end))
                 {
-                    break; // Arrêter si le noeud de destination est atteint
+                    break;
                 }
 
-                if (currentDistance > distances[currentNode])
-                {
-                    continue; // Ignorer les anciennes distances
-                }
-
-                // Utiliser la liste d'adjacence pour trouver les voisins
+                // Exploration des voisins
                 if (ListeAdjacence.ContainsKey(currentNode))
                 {
                     foreach (var neighbor in ListeAdjacence[currentNode])
                     {
-                        var newDistance = currentDistance + GetTempsTrajet(currentNode, neighbor);
+                        double tempsTrajet = GetTempsTrajet(currentNode, neighbor);
+                        double newDistance = currentDistance + tempsTrajet;
 
+                        // Vérifie si on a trouvé un chemin plus court
                         if (newDistance < distances[neighbor])
                         {
                             distances[neighbor] = newDistance;
                             previousNodes[neighbor] = currentNode;
-                            priorityQueue.Remove((neighbor, distances[neighbor]));
-                            priorityQueue.Add((neighbor, newDistance));
+
+                            if (!priorityQueue.ContainsKey(newDistance))
+                            {
+                                priorityQueue[newDistance] = new List<T>();
+                            }
+                            priorityQueue[newDistance].Add(neighbor);
                         }
                     }
                 }
             }
 
+            // Reconstruct le chemin
             return ReconstructPath(previousNodes, start, end);
         }
 
-        private List<T> ReconstructPath(Dictionary<T, T> previousNodes, T start, T end)
+
+
+
+
+        private List<T> ReconstructPath(Dictionary<T, T> predecessors, T start, T end)
         {
             var path = new List<T>();
             var equalityComparer = EqualityComparer<T>.Default;
 
-            for (var step = end; !equalityComparer.Equals(step, start); step = previousNodes.ContainsKey(step) ? previousNodes[step] : default(T))
+            for (var step = end; !equalityComparer.Equals(step, start); step = predecessors.ContainsKey(step) ? predecessors[step] : default(T))
             {
                 if (!equalityComparer.Equals(step, default(T)))
                 {
@@ -336,7 +351,7 @@ namespace Etape1
             return lien != null ? lien.TempsTrajet : double.MaxValue;
         }
 
-        
+
 
         public double CalculerTempsTrajet(List<T> chemin)
         {
@@ -375,12 +390,200 @@ namespace Etape1
             }
 
             Console.WriteLine("Chemin trouvé :");
-            foreach (var noeud in chemin)
+            Console.WriteLine(string.Join(" -> ", chemin));
+
+            // Calculer et afficher le temps total du trajet
+            double tempsTotal = CalculerTempsTrajet(chemin);
+            if (tempsTotal != -1)
             {
-                Console.Write(noeud + " ");
+                Console.WriteLine($"Temps total du trajet : {tempsTotal:F1}");
             }
-            Console.WriteLine();
+            else
+            {
+                Console.WriteLine("Erreur dans le calcul du temps de trajet.");
+            }
         }
 
+
+
+        public void FloydWarshall()
+        {
+            int n = Noeuds.Count;
+            double[,] dist = new double[n, n];
+            int[,] pred = new int[n, n];
+            var idToIndex = new Dictionary<T, int>();
+            var indexToId = new Dictionary<int, T>();
+            int index = 0;
+
+            // Associer chaque ID de sommet à un index numérique
+            foreach (var noeud in Noeuds.Values)
+            {
+                idToIndex[noeud.Id] = index;
+                indexToId[index] = noeud.Id;
+                index++;
+            }
+
+            // Initialiser les matrices
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    if (i == j)
+                    {
+                        dist[i, j] = 0;
+                        pred[i, j] = i; // Un sommet mène à lui-même
+                    }
+                    else
+                    {
+                        dist[i, j] = double.MaxValue;
+                        pred[i, j] = -1; // Aucun prédécesseur initialement
+                    }
+                }
+            }
+
+            // Remplir les distances directes et les prédécesseurs
+            foreach (var noeud in Noeuds.Values)
+            {
+                int i = idToIndex[noeud.Id];
+
+                foreach (var lien in noeud.Liens)
+                {
+                    int j = idToIndex[lien.Destination.Id];
+                    dist[i, j] = lien.TempsTrajet;
+                    pred[i, j] = i; // Le prédécesseur de j est i
+                }
+            }
+
+            // Algorithme de Floyd-Warshall
+            for (int k = 0; k < n; k++)
+            {
+                for (int i = 0; i < n; i++)
+                {
+                    for (int j = 0; j < n; j++)
+                    {
+                        if (dist[i, k] != double.MaxValue && dist[k, j] != double.MaxValue &&
+                            dist[i, k] + dist[k, j] < dist[i, j])
+                        {
+                            dist[i, j] = dist[i, k] + dist[k, j];
+                            pred[i, j] = pred[k, j]; // Mettre à jour le prédécesseur
+                        }
+                    }
+                }
+            }
+
+            // Sauvegarde des résultats pour une utilisation ultérieure
+            this.Distances = dist;
+            this.Predecesseurs = pred;
+            this.IndexToId = indexToId;
+            this.IdToIndex = idToIndex;
+        }
+
+        // Stockage des résultats après l'exécution de Floyd-Warshall
+        private double[,] Distances;
+        private int[,] Predecesseurs;
+        private Dictionary<int, T> IndexToId;
+        private Dictionary<T, int> IdToIndex;
+
+
+
+        // Fonction pour récupérer le chemin le plus court entre deux sommets
+        public void AfficherCheminPlusCourt(T depart, T arrivee)
+        {
+            if (!IdToIndex.ContainsKey(depart) || !IdToIndex.ContainsKey(arrivee))
+            {
+                Console.WriteLine("Les sommets spécifiés n'existent pas.");
+                return;
+            }
+
+            int start = IdToIndex[depart];
+            int end = IdToIndex[arrivee];
+
+            if (Distances[start, end] == double.MaxValue)
+            {
+                Console.WriteLine($"Il n'y a pas de chemin entre {depart} et {arrivee}.");
+                return;
+            }
+
+            // Récupérer le chemin en remontant les prédécesseurs
+            List<T> chemin = new List<T>();
+            for (int at = end; at != start; at = Predecesseurs[start, at])
+            {
+                if (at == -1)
+                {
+                    Console.WriteLine("Chemin impossible.");
+                    return;
+                }
+                chemin.Add(IndexToId[at]);
+            }
+            chemin.Add(depart);
+            chemin.Reverse();
+
+            // Affichage du résultat
+            Console.WriteLine($"Le plus court chemin de {depart} à {arrivee} est :");
+            Console.WriteLine(string.Join(" -> ", chemin));
+
+            // Calculer et afficher le temps total du trajet
+            double tempsTotal = CalculerTempsTrajet(chemin);
+            if (tempsTotal != -1)
+            {
+                Console.WriteLine($"Temps total du trajet : {tempsTotal:F1}");
+            }
+            else
+            {
+                Console.WriteLine("Erreur dans le calcul du temps de trajet.");
+            }
+        }
+
+
+
+
+
+        public List<T> BellmanFord(T start, T end)
+        {
+            var distances = new Dictionary<T, double>();
+            var predecessors = new Dictionary<T, T>();
+
+            // Initialisation
+            foreach (var noeud in Noeuds.Keys)
+            {
+                distances[noeud] = double.MaxValue;  // Distance infinie par défaut
+                predecessors[noeud] = default(T);    // Pas de prédécesseur
+            }
+
+            distances[start] = 0;
+
+            // Relaxation des arêtes
+            for (int i = 1; i < Noeuds.Count; i++)
+            {
+                foreach (var noeud in Noeuds.Values)
+                {
+                    foreach (var lien in noeud.Liens)
+                    {
+                        double newDistance = distances[noeud.Id] + lien.TempsTrajet;
+                        if (newDistance < distances[lien.Destination.Id])
+                        {
+                            distances[lien.Destination.Id] = newDistance;
+                            predecessors[lien.Destination.Id] = noeud.Id;
+                        }
+                    }
+                }
+            }
+
+            // Vérification des cycles de poids négatif
+            foreach (var noeud in Noeuds.Values)
+            {
+                foreach (var lien in noeud.Liens)
+                {
+                    if (distances[noeud.Id] + lien.TempsTrajet < distances[lien.Destination.Id])
+                    {
+                        Console.WriteLine("Le graphe contient un cycle de poids négatif.");
+                        return null;
+                    }
+                }
+            }
+
+            // Reconstruction du chemin
+            return ReconstructPath(predecessors, start, end);
+        }
     }
 }

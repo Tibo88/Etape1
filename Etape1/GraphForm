@@ -8,7 +8,7 @@ namespace Etape1
 {
     public class GraphForm
     {
-        public static void GenererPlanDuMetro(Graph<int> graphe, string nomFichier, string fondImagePath)
+        public static void GenererPlanDuMetro(Graph<int> graphe, string nomFichier)
         {
             // Taille de l'image
             int largeurImage = 1400;
@@ -18,13 +18,7 @@ namespace Etape1
             using (var surface = SKSurface.Create(new SKImageInfo(largeurImage, hauteurImage)))
             {
                 var canvas = surface.Canvas;
-
-                // Charger l'image de fond
-                using (var bitmap = SKBitmap.Decode(fondImagePath))
-                {
-                    // Dessiner l'image de fond
-                    canvas.DrawBitmap(bitmap, new SKRect(0, 0, largeurImage, hauteurImage));
-                }
+                canvas.Clear(SKColors.White); // Fond blanc
 
                 // Calculer l'échelle pour convertir les coordonnées de la station en pixels
                 double minLongitude = graphe.Noeuds.Values.Min(n => n.Longitude);
@@ -97,5 +91,6 @@ namespace Etape1
                 }
             }
         }
+
     }
 }

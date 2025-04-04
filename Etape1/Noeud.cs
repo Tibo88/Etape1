@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-namespace Etape1
+namespace Etape2
 {
     public class Noeud<T>
     {

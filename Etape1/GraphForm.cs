@@ -1,14 +1,18 @@
-
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Etape1
+namespace Etape2
 {
     public class GraphForm
     {
+        /// <summary>
+        /// Génère un plan du métro à partir des données de graphes et l'enregistre dans un fichier image.
+        /// </summary>
+        /// <param name="graphe">Le graphe contenant les stations du métro et leurs liens.</param>
+        /// <param name="nomFichier">Le nom du fichier dans lequel l'image sera sauvegardée.</param>
         public static void GenererPlanDuMetro(Graph<int> graphe, string nomFichier)
         {
             // Taille de l'image

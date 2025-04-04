@@ -95,7 +95,6 @@ namespace Etape2
         /// <param name="fichierArcs">Le chemin du fichier contenant les informations sur les arcs.</param>
         public void ChargerDepuisFichier(string fichierNoeuds, string fichierArcs)
         {
-            // Charger les noeuds
             Console.WriteLine("Chargement des noeuds...");
             foreach (var ligne in File.ReadLines(fichierNoeuds).Skip(1))
             {
@@ -186,9 +185,9 @@ namespace Etape2
                         var idStation2 = groupeNom[j];
 
                         // Ajouter un lien dans les deux sens si le graphe n'est pas orienté
-                        double tempsTrajet = 0; // Vous pouvez définir un temps de trajet par défaut pour les changements de ligne
-                        double tempsChangement = 5; // Exemple de temps de changement, à ajuster selon vos besoins
-                        double distance = 0; // La distance peut être nulle ou une valeur par défaut pour les changements de ligne
+                        double tempsTrajet = 0; 
+                        double tempsChangement = 5; 
+                        double distance = 0; e
 
                         AjouterLien(idStation1, idStation2, tempsTrajet, tempsChangement, distance);
 
@@ -215,19 +214,17 @@ namespace Etape2
             var noeud1 = Noeuds[id1];
             var noeud2 = Noeuds[id2];
 
-            // Convertir les latitudes et longitudes en radians
             double phi1 = noeud1.Latitude * Math.PI / 180;
             double phi2 = noeud2.Latitude * Math.PI / 180;
             double deltaPhi = (noeud2.Latitude - noeud1.Latitude) * Math.PI / 180;
-            double deltaLambda = (noeud2.Longitude - noeud1.Longitude) * Math.PI / 180;  // Longitude = Est-Ouest, latitude = Nord-Sud
+            double deltaLambda = (noeud2.Longitude - noeud1.Longitude) * Math.PI / 180;  
 
-            // Application de la formule de Haversine
             double a = Math.Sin(deltaPhi / 2) * Math.Sin(deltaPhi / 2) +
                        Math.Cos(phi1) * Math.Cos(phi2) * Math.Sin(deltaLambda / 2) * Math.Sin(deltaLambda / 2);
             double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
 
-            const double R = 6371; // Rayon moyen de la Terre en km
-            return R * c;  // Retourner la distance en kilomètres
+            const double R = 6371; 
+            return R * c;  
         }
 
         /// <summary>
@@ -274,7 +271,6 @@ namespace Etape2
         {
             Console.WriteLine("Liste d'adjacence :");
 
-            // Trier les clés de la liste d'adjacence
             var keysSorted = ListeAdjacence.Keys.ToList();
             keysSorted.Sort();
 
@@ -282,7 +278,6 @@ namespace Etape2
             {
                 Console.Write(key + " -> ");
 
-                // Trier les voisins avant de les afficher
                 var voisinsSorted = ListeAdjacence[key].ToList();
                 voisinsSorted.Sort();
 
@@ -310,11 +305,10 @@ namespace Etape2
             var previousNodes = new Dictionary<T, T>();
             var priorityQueue = new SortedDictionary<double, List<T>>();
 
-            // Initialisation
             foreach (var noeud in Noeuds.Keys)
             {
-                distances[noeud] = double.MaxValue;  // Distance infinie par défaut
-                previousNodes[noeud] = default(T);  // Pas de prédécesseur
+                distances[noeud] = double.MaxValue; 
+                previousNodes[noeud] = default(T); 
             }
 
             distances[start] = 0;
@@ -322,7 +316,6 @@ namespace Etape2
 
             while (priorityQueue.Count > 0)
             {
-                // Récupère le nœud avec la plus petite distance
                 var currentDistance = priorityQueue.Keys.First();
                 var currentNode = priorityQueue[currentDistance].First();
                 priorityQueue[currentDistance].RemoveAt(0);
@@ -332,13 +325,11 @@ namespace Etape2
                     priorityQueue.Remove(currentDistance);
                 }
 
-                // Si on atteint la destination, on arrête
                 if (currentNode.Equals(end))
                 {
                     break;
                 }
 
-                // Exploration des voisins
                 if (ListeAdjacence.ContainsKey(currentNode))
                 {
                     foreach (var neighbor in ListeAdjacence[currentNode])
@@ -346,7 +337,6 @@ namespace Etape2
                         double tempsTrajet = GetTempsTrajet(currentNode, neighbor);
                         double newDistance = currentDistance + tempsTrajet;
 
-                        // Vérifie si on a trouvé un chemin plus court
                         if (newDistance < distances[neighbor])
                         {
                             distances[neighbor] = newDistance;
@@ -362,7 +352,6 @@ namespace Etape2
                 }
             }
 
-            // Reconstruct le chemin
             return ReconstructPath(previousNodes, start, end);
         }
 
@@ -436,7 +425,7 @@ namespace Etape2
                 else
                 {
                     Console.WriteLine($"Aucun lien trouvé entre {depart} et {arrivee}.");
-                    return -1; // Retourner -1 ou une autre valeur d'erreur si un lien est manquant
+                    return -1; 
                 }
             }
 

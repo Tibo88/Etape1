@@ -36,17 +36,17 @@ class Program
         graphe.AfficherChemin(cheminBellmanFord);
 
         string nomFichier = "plan_metro_parisien.png";
-    GraphForm.GenererPlanDuMetro(graphe, nomFichier);
+        GraphForm.GenererPlanDuMetro(graphe, nomFichier);
 
-// Ouvrir l'image avec le programme par défaut (sans spécifier un exécutable)
-    try
-    {
-        Process.Start(new ProcessStartInfo(nomFichier) { UseShellExecute = true });
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Erreur lors de l'ouverture du fichier : {ex.Message}");
-    }
+        // Ouvrir l'image avec le programme par défaut (sans spécifier un exécutable)
+        try
+        {
+            Process.Start(new ProcessStartInfo(nomFichier) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de l'ouverture du fichier : {ex.Message}");
+        }
 
         MenuPrincipal();
     }

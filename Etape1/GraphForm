@@ -1,0 +1,101 @@
+using SkiaSharp;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+namespace Etape1
+{
+    public class GraphForm
+    {
+        public static void GenererPlanDuMetro(Graph<int> graphe, string nomFichier, string fondImagePath)
+        {
+            // Taille de l'image
+            int largeurImage = 1400;
+            int hauteurImage = 1200;
+
+            // Créer une image vide
+            using (var surface = SKSurface.Create(new SKImageInfo(largeurImage, hauteurImage)))
+            {
+                var canvas = surface.Canvas;
+
+                // Charger l'image de fond
+                using (var bitmap = SKBitmap.Decode(fondImagePath))
+                {
+                    // Dessiner l'image de fond
+                    canvas.DrawBitmap(bitmap, new SKRect(0, 0, largeurImage, hauteurImage));
+                }
+
+                // Calculer l'échelle pour convertir les coordonnées de la station en pixels
+                double minLongitude = graphe.Noeuds.Values.Min(n => n.Longitude);
+                double maxLongitude = graphe.Noeuds.Values.Max(n => n.Longitude);
+                double minLatitude = graphe.Noeuds.Values.Min(n => n.Latitude);
+                double maxLatitude = graphe.Noeuds.Values.Max(n => n.Latitude);
+
+                double echelleLongitude = largeurImage / (maxLongitude - minLongitude);
+                double echelleLatitude = hauteurImage / (maxLatitude - minLatitude);
+
+                // Dessiner les liens entre les stations
+                foreach (var noeud in graphe.Noeuds.Values)
+                {
+                    // Inverser la latitude pour que les stations plus au nord apparaissent plus bas
+                    int x1 = (int)((noeud.Longitude - minLongitude) * echelleLongitude);
+                    int y1 = (int)((maxLatitude - noeud.Latitude) * echelleLatitude);  // Inversion ici
+
+                    // Dessiner les voisins
+                    foreach (var lien in noeud.Liens)
+                    {
+                        Noeud<int> voisin = lien.Destination;
+                        int x2 = (int)((voisin.Longitude - minLongitude) * echelleLongitude);
+                        int y2 = (int)((maxLatitude - voisin.Latitude) * echelleLatitude);  // Inversion ici
+
+                        // Dessiner une ligne entre les stations
+                        var paint = new SKPaint
+                        {
+                            Color = SKColors.Black,
+                            StrokeWidth = 2,
+                            IsAntialias = true
+                        };
+
+                        canvas.DrawLine(x1, y1, x2, y2, paint);
+                    }
+                }
+
+                // Dessiner les stations
+                foreach (var noeud in graphe.Noeuds.Values)
+                {
+                    // Inverser la latitude pour que les stations plus au nord apparaissent plus bas
+                    int x = (int)((noeud.Longitude - minLongitude) * echelleLongitude);
+                    int y = (int)((maxLatitude - noeud.Latitude) * echelleLatitude);  // Inversion ici
+
+                    // Dessiner un cercle représentant la station
+                    var paint = new SKPaint
+                    {
+                        Color = SKColors.Red,
+                        IsAntialias = true
+                    };
+                    canvas.DrawCircle(x, y, 5, paint);
+
+                    // Dessiner le nom de la station à côté
+                    var textPaint = new SKPaint
+                    {
+                        Color = SKColors.Black,
+                        TextSize = 14,
+                        IsAntialias = true
+                    };
+
+                    canvas.DrawText(noeud.Nom, x + 5, y - 5, textPaint);
+                }
+
+                // Sauvegarder l'image dans un fichier
+                using (var image = surface.Snapshot())
+                using (var data = image.Encode())
+                using (var stream = File.OpenWrite(nomFichier))
+                {
+                    data.SaveTo(stream);
+                    Console.WriteLine("Le plan du métro a été sauvegardé dans : " + nomFichier);
+                }
+            }
+        }
+    }
+}

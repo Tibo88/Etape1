@@ -187,7 +187,7 @@ namespace Etape2
                         // Ajouter un lien dans les deux sens si le graphe n'est pas orienté
                         double tempsTrajet = 0; 
                         double tempsChangement = 5; 
-                        double distance = 0; e
+                        double distance = 0; 
 
                         AjouterLien(idStation1, idStation2, tempsTrajet, tempsChangement, distance);
 

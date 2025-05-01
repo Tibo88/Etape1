@@ -23,21 +23,20 @@ class Program
         Console.WriteLine();
         Console.WriteLine("Exécution de Floyd-Warshall");
         graphe.FloydWarshall();
-        graphe.AfficherCheminPlusCourt(1, 3);
+        graphe.AfficherCheminPlusCourt(24, 240);
         Console.WriteLine();
 
         Console.WriteLine("Exécution de Dijkstra");
-        List<int> cheminDijkstra = graphe.Dijkstra(1, 115);
+        List<int> cheminDijkstra = graphe.Dijkstra(1, 3);
         graphe.AfficherChemin(cheminDijkstra);
         Console.WriteLine();
 
         Console.WriteLine("Exécution de Bellman-Ford");
-        List<int> cheminBellmanFord = graphe.BellmanFord(1, 3);
+        List<int> cheminBellmanFord = graphe.BellmanFord(24, 240);
         graphe.AfficherChemin(cheminBellmanFord);
-
         string nomFichier = "plan_metro_parisien.png";
-        GraphForm.GenererPlanDuMetro(graphe, nomFichier);
-
+        GraphForm.GenererPlanDuMetro(graphe, nomFichier, cheminBellmanFord);
+        
         // Ouvrir l'image avec le programme par défaut (sans spécifier un exécutable)
         try
         {

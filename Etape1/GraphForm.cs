@@ -13,7 +13,8 @@ namespace Etape2
         /// </summary>
         /// <param name="graphe">Le graphe contenant les stations du métro et leurs liens.</param>
         /// <param name="nomFichier">Le nom du fichier dans lequel l'image sera sauvegardée.</param>
-        public static void GenererPlanDuMetro(Graph<int> graphe, string nomFichier)
+        /// <param name="chemin">La liste des stations représentant le chemin trouvé.</param>
+        public static void GenererPlanDuMetro(Graph<int> graphe, string nomFichier, List<int> chemin = null)
         {
             // Taille de l'image
             int largeurImage = 1400;
@@ -86,6 +87,30 @@ namespace Etape2
                     canvas.DrawText(noeud.Nom, x + 5, y - 5, textPaint);
                 }
 
+                // Dessiner le chemin trouvé
+                if (chemin != null && chemin.Count > 1)
+                {
+                    var cheminPaint = new SKPaint
+                    {
+                        Color = SKColors.Blue,
+                        StrokeWidth = 4,
+                        IsAntialias = true
+                    };
+
+                    for (int i = 0; i < chemin.Count - 1; i++)
+                    {
+                        var noeud1 = graphe.Noeuds[chemin[i]];
+                        var noeud2 = graphe.Noeuds[chemin[i + 1]];
+
+                        int x1 = (int)((noeud1.Longitude - minLongitude) * echelleLongitude);
+                        int y1 = (int)((maxLatitude - noeud1.Latitude) * echelleLatitude);
+                        int x2 = (int)((noeud2.Longitude - minLongitude) * echelleLongitude);
+                        int y2 = (int)((maxLatitude - noeud2.Latitude) * echelleLatitude);
+
+                        canvas.DrawLine(x1, y1, x2, y2, cheminPaint);
+                    }
+                }
+
                 // Sauvegarder l'image dans un fichier
                 using (var image = surface.Snapshot())
                 using (var data = image.Encode())
@@ -96,6 +121,6 @@ namespace Etape2
                 }
             }
         }
-
     }
 }
+

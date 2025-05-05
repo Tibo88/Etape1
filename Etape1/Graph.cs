@@ -62,7 +62,7 @@ namespace Etape2
             // Vérifiez que les deux noeuds existent et qu'ils ne sont pas les mêmes
             if (!Noeuds.ContainsKey(idStation1) || !Noeuds.ContainsKey(idStation2) || idStation1.Equals(idStation2))
             {
-                Console.WriteLine($"Les noeuds {idStation1} et/ou {idStation2} n'existent pas ou sont identiques.");
+                Console.WriteLine($"Les noeuds {idStation1} et ou {idStation2} n'existent pas ou sont identiques");
                 return;
             }
 
@@ -70,11 +70,26 @@ namespace Etape2
             var destination = Noeuds[idStation2];
 
             // Vérifiez que le lien n'existe pas déjà
-            if (source.Liens.Any(l => l.Destination.Id.Equals(destination.Id)))
+
+
+            //----------------------------------------------------------------------------------------------------------------------------
+
+            bool lienExiste = false;
+            foreach (var varlien in source.Liens)
+            {
+                if (varlien.Destination.Id.Equals(destination.Id))
+                {
+                    lienExiste = true;
+                    break;
+                }
+            }
+
+            if (lienExiste)
             {
                 Console.WriteLine($"Le lien de {idStation1} vers {idStation2} existe déjà.");
                 return;
             }
+
 
             var lien = new Lien<T>(source, destination, tempsTrajet, tempsChangement, distance);
 
@@ -82,7 +97,21 @@ namespace Etape2
             if (!EstOriente)
             {
                 // Vérifiez également que le lien inverse n'existe pas déjà
-                if (!destination.Liens.Any(l => l.Destination.Id.Equals(source.Id)))
+
+                //----------------------------------------------------------------------------------------------------------------------------
+
+
+                bool lienInverseExiste = false;
+                foreach (var varlien in destination.Liens)
+                {
+                    if (varlien.Destination.Id.Equals(source.Id))
+                    {
+                        lienInverseExiste = true;
+                        break;
+                    }
+                }
+
+                if (!lienInverseExiste)
                 {
                     destination.Liens.Add(lien);
                 }
@@ -185,8 +214,8 @@ namespace Etape2
                         var idStation2 = groupeNom[j];
 
                         // Ajouter un lien dans les deux sens si le graphe n'est pas orienté
-                        double tempsTrajet = 0; 
-                        double tempsChangement = 5; 
+                        double tempsTrajet = 0;
+                        double tempsChangement = 5;
                         double distance = 0; 
 
                         AjouterLien(idStation1, idStation2, tempsTrajet, tempsChangement, distance);
@@ -217,14 +246,14 @@ namespace Etape2
             double phi1 = noeud1.Latitude * Math.PI / 180;
             double phi2 = noeud2.Latitude * Math.PI / 180;
             double deltaPhi = (noeud2.Latitude - noeud1.Latitude) * Math.PI / 180;
-            double deltaLambda = (noeud2.Longitude - noeud1.Longitude) * Math.PI / 180;  
+            double deltaLambda = (noeud2.Longitude - noeud1.Longitude) * Math.PI / 180;
 
             double a = Math.Sin(deltaPhi / 2) * Math.Sin(deltaPhi / 2) +
                        Math.Cos(phi1) * Math.Cos(phi2) * Math.Sin(deltaLambda / 2) * Math.Sin(deltaLambda / 2);
             double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
 
-            const double R = 6371; 
-            return R * c;  
+            const double R = 6371;
+            return R * c;
         }
 
         /// <summary>
@@ -307,8 +336,8 @@ namespace Etape2
 
             foreach (var noeud in Noeuds.Keys)
             {
-                distances[noeud] = double.MaxValue; 
-                previousNodes[noeud] = default(T); 
+                distances[noeud] = double.MaxValue;
+                previousNodes[noeud] = default(T);
             }
 
             distances[start] = 0;
@@ -396,7 +425,19 @@ namespace Etape2
         /// <returns>Le temps de trajet entre les deux stations.</returns>
         private double GetTempsTrajet(T depart, T arrivee)
         {
-            var lien = Noeuds[depart].Liens.FirstOrDefault(l => l.Destination.Id.Equals(arrivee));
+
+            //----------------------------------------------------------------------------------------------------------------------------
+
+            Lien<T> lien = null;
+            foreach (var lienCourant in Noeuds[depart].Liens)
+            {
+                if (lienCourant.Destination.Id.Equals(arrivee))
+                {
+                    lien = lienCourant;
+                    break;
+                }
+            }
+
             return lien != null ? lien.TempsTrajet : double.MaxValue;
         }
 
@@ -416,7 +457,19 @@ namespace Etape2
                 T arrivee = chemin[i + 1];
 
                 // Trouver le lien entre les deux stations
-                var lien = Noeuds[depart].Liens.FirstOrDefault(l => l.Destination.Id.Equals(arrivee));
+
+                //----------------------------------------------------------------------------------------------------------------------------
+
+                Lien<T> lien = null;
+                foreach (var lienCourant in Noeuds[depart].Liens)
+                {
+                    if (lienCourant.Destination.Id.Equals(arrivee))
+                    {
+                        lien = lienCourant;
+                        break;
+                    }
+                }
+
 
                 if (lien != null)
                 {
@@ -425,7 +478,7 @@ namespace Etape2
                 else
                 {
                     Console.WriteLine($"Aucun lien trouvé entre {depart} et {arrivee}.");
-                    return -1; 
+                    return -1;
                 }
             }
 

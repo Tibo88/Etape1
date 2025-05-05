@@ -13,6 +13,11 @@ class Program
 
     static void Main()
     {
+        
+        
+
+
+
         Graph<int> graphe = new Graph<int>();
         graphe.ChargerDepuisFichier("Noeuds2.txt", "Arcs2.txt");
         graphe.AjouterLiensManquants();
@@ -46,9 +51,42 @@ class Program
         {
             Console.WriteLine($"Erreur lors de l'ouverture du fichier : {ex.Message}");
         }
+        
 
         MenuPrincipal(graphe);
+        
+
     }
+    static void RemplirGrapheDepuisBDD(Graph<string> graphe)
+    {
+        using (MySqlConnection conn = new MySqlConnection(connectionString))
+        {
+            conn.Open();
+            string query = @"
+                SELECT c.client_id, c.cuisinier_id
+                FROM commande c
+                JOIN client_particulier cp ON cp.identifiant = c.client_id
+                JOIN cuisinier cu ON cu.identifiant = c.cuisinier_id";
+
+            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+            using (MySqlDataReader reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    string clientId = reader.GetString(0);
+                    string cuisinierId = reader.GetString(1);
+
+                    // Ajouter les nœuds au graphe
+                    graphe.AjouterNoeud(clientId, clientId, "", 0, 0, "", "");
+                    graphe.AjouterNoeud(cuisinierId, cuisinierId, "", 0, 0, "", "");
+
+                    // Ajouter l'arête représentant la commande
+                    graphe.AjouterLien(clientId, cuisinierId, 0, 0, 0);
+                }
+            }
+        }
+    }
+
 
 
     static void MenuPrincipal(Graph<int> graphe)
@@ -59,7 +97,8 @@ class Program
             Console.WriteLine("1. Créer un compte");
             Console.WriteLine("2. Se connecter");
             Console.WriteLine("3. Accéder au module administrateur");
-            Console.WriteLine("4. Quitter");
+            Console.WriteLine("4. Afficher le graphe des relations"); // Nouvelle option
+            Console.WriteLine("5. Quitter");
             Console.Write("Votre choix : ");
             string choix = Console.ReadLine();
             switch (choix)
@@ -73,7 +112,12 @@ class Program
                 case "3":
                     MenuAdministrateur();
                     break;
-                case "4":
+                case "4": // Nouvelle option pour afficher le graphe des relations
+                    GraphRelation grapheRelation = new GraphRelation();
+                    grapheRelation.AfficherListeAdjacence();
+                    grapheRelation.GenererGraphe("graphe_relations.png");
+                    break;
+                case "5":
                     Environment.Exit(0);
                     break;
                 default:
@@ -82,6 +126,7 @@ class Program
             }
         }
     }
+
 
 
     static void MenuAdministrateur()
@@ -691,8 +736,4 @@ class Program
             }
         }
     }
-
-
-
-
 }

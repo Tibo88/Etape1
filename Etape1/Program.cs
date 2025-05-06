@@ -1,4 +1,5 @@
-using Etape2;
+
+using Etape1;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,18 +7,14 @@ using System.IO;
 using MySql.Data.MySqlClient;
 using SkiaSharp;
 using System.Text.RegularExpressions;
+using Etape1;
 
 class Program
 {
-    static string connectionString = "server=localhost;database=AppliV3;user=root;password=&Mot2passe;";
+    static string connectionString = "server=localhost;database=AppliV3;user=root;password=root88;";
 
     static void Main()
     {
-        
-        
-
-
-
         Graph<int> graphe = new Graph<int>();
         graphe.ChargerDepuisFichier("Noeuds2.txt", "Arcs2.txt");
         graphe.AjouterLiensManquants();
@@ -38,7 +35,7 @@ class Program
         Console.WriteLine();
 
         Console.WriteLine("Exécution de Bellman-Ford");
-        List<int> cheminBellmanFord = graphe.BellmanFord(24, 240);
+        List<int> cheminBellmanFord = graphe.BellmanFord(113, 225);
         graphe.AfficherChemin(cheminBellmanFord);
         string nomFichier = "plan_metro_parisien.png";
         GraphForm.GenererPlanDuMetro(graphe, nomFichier, cheminBellmanFord);
@@ -51,10 +48,10 @@ class Program
         {
             Console.WriteLine($"Erreur lors de l'ouverture du fichier : {ex.Message}");
         }
-        
+
 
         MenuPrincipal(graphe);
-        
+
 
     }
     static void RemplirGrapheDepuisBDD(Graph<string> graphe)
@@ -265,7 +262,7 @@ class Program
             }
         }
 
-       
+
 
         using (MySqlConnection conn = new MySqlConnection(connectionString))
         {
@@ -296,7 +293,7 @@ class Program
                 cmd.Parameters.AddWithValue("@telephone", telephone);
                 cmd.Parameters.AddWithValue("@email", email);
                 cmd.Parameters.AddWithValue("@metroProche", metroProche);
-                
+
                 cmd.ExecuteNonQuery();
             }
         }
@@ -337,7 +334,7 @@ class Program
         }
 
         if (role == "client_particulier" || role == "client_entreprise")
-            MenuClient(username,graphe);
+            MenuClient(username, graphe);
         else if (role == "cuisinier")
             MenuCuisinier(username, graphe);
         else
@@ -357,7 +354,7 @@ class Program
 
             if (choix == "1") PasserCommande(username);
             else if (choix == "2") SupprimerCompte(username, graphe);
-            
+
             else if (choix == "3") return;
             else Console.WriteLine("Choix invalide !");
         }
@@ -514,7 +511,7 @@ class Program
             Console.Write("\nAdresse de livraison : ");
             string adresse = Console.ReadLine();
 
-            // 🔹 Récupérer et incrémenter l'ID de la commande
+            // Récupérer et incrémenter l'ID de la commande
             int idCommande;
             string queryGetMaxCommande = "SELECT IFNULL(MAX(numero_commande), 0) + 1 FROM commande";
             using (MySqlCommand cmd = new MySqlCommand(queryGetMaxCommande, conn))
@@ -522,7 +519,7 @@ class Program
                 idCommande = Convert.ToInt32(cmd.ExecuteScalar());
             }
 
-            // 🔹 Choisir un cuisinier (exemple : premier cuisinier disponible)
+            // Choisir un cuisinier (exemple : premier cuisinier disponible)
             string cuisinierId;
             string cuisinierQuery = "SELECT identifiant FROM cuisinier LIMIT 1";  // Choix arbitraire du premier cuisinier
             using (MySqlCommand cmd = new MySqlCommand(cuisinierQuery, conn))
@@ -536,10 +533,10 @@ class Program
                 cuisinierId = result.ToString();
             }
 
-            // 🔹 Insérer une nouvelle commande avec client et cuisinier
+            // Insérer une nouvelle commande avec client et cuisinier
             string queryInsertCommande = @"
-            INSERT INTO commande (numero_commande, client_id, cuisinier_id, date_commande)
-            VALUES (@numero, @client_id, @cuisinier_id, CURDATE())";
+        INSERT INTO commande (numero_commande, client_id, cuisinier_id, date_commande)
+        VALUES (@numero, @client_id, @cuisinier_id, CURDATE())";
             using (MySqlCommand cmd = new MySqlCommand(queryInsertCommande, conn))
             {
                 cmd.Parameters.AddWithValue("@numero", idCommande);
@@ -548,7 +545,7 @@ class Program
                 cmd.ExecuteNonQuery();
             }
 
-            // 🔹 Récupérer et incrémenter l'ID de la sous-commande
+            // Récupérer et incrémenter l'ID de la sous-commande
             int idSousCommande;
             string queryGetMaxSousCommande = "SELECT IFNULL(MAX(id_sous_commandes), 0) + 1 FROM sous_commandes";
             using (MySqlCommand cmd = new MySqlCommand(queryGetMaxSousCommande, conn))
@@ -556,7 +553,7 @@ class Program
                 idSousCommande = Convert.ToInt32(cmd.ExecuteScalar());
             }
 
-            // 🔹 Choix du plat
+            // Choix du plat
             Console.WriteLine("\nVoulez-vous :");
             Console.WriteLine("1. Commander un plat déjà préparé");
             Console.WriteLine("2. Commander un plat spécifique");
@@ -608,7 +605,7 @@ class Program
                     }
                 }
 
-                // 🔹 Mise à jour de la quantité du plat après la commande
+                // Mise à jour de la quantité du plat après la commande
                 string queryUpdateQuantite = "UPDATE plat SET quantite = quantite - 1 WHERE id_plat = @idPlat AND quantite > 0";
                 using (MySqlCommand cmd = new MySqlCommand(queryUpdateQuantite, conn))
                 {
@@ -653,19 +650,21 @@ class Program
                 return;
             }
 
-            // 🔹 Insérer la sous-commande
-            string queryInsertSousCommande = "INSERT INTO sous_commandes (id_sous_commandes, date_livraison, adresse_livraison, numero_commande) VALUES (@idSousCommande, CURDATE(), @adresse, @idCommande)";
+            // Insérer la sous-commande
+            string queryInsertSousCommande = "INSERT INTO sous_commandes (id_sous_commandes, date_livraison, adresse_livraison, numero_commande, plat_id) VALUES (@idSousCommande, CURDATE(), @adresse, @idCommande, @idPlat)";
             using (MySqlCommand cmd = new MySqlCommand(queryInsertSousCommande, conn))
             {
                 cmd.Parameters.AddWithValue("@idSousCommande", idSousCommande);
                 cmd.Parameters.AddWithValue("@adresse", adresse);
                 cmd.Parameters.AddWithValue("@idCommande", idCommande);
+                cmd.Parameters.AddWithValue("@idPlat", idPlatChoisi);
                 cmd.ExecuteNonQuery();
             }
 
             Console.WriteLine($"Commande enregistrée avec succès ! (Commande ID: {idCommande}, Plat: {nomPlat})");
         }
     }
+
 
 
 

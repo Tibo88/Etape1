@@ -12,7 +12,7 @@ namespace Etape2
     {
         private Dictionary<string, Utilisateur> Utilisateurs { get; set; }
         private Dictionary<string, List<string>> ListeAdjacence { get; set; }
-        private string connectionString = "server=localhost;database=AppliV3;user=root;password=root88;";
+        private string connectionString = "server=localhost;database=AppliV3;user=root;password=&Mot2passe;";
 
         public GraphRelation()
         {

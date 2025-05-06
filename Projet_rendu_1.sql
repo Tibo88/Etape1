@@ -65,7 +65,8 @@ CREATE TABLE plat (
     date_fabrication DATE,
     date_peremption DATE,
     regime VARCHAR(50),
-    nature VARCHAR(50)
+    nature VARCHAR(50),
+    cuisinier_id VARCHAR(50)
 );
 
 CREATE TABLE ingredients (
@@ -96,3 +97,5 @@ SELECT c.numero_commande, c.client_id, cp.metro_proche
 FROM commande c
 JOIN client_particulier cp ON cp.identifiant = c.client_id
 WHERE c.numero_commande IN (1004, 1005);
+
+select * from plat;

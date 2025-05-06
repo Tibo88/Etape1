@@ -1,5 +1,5 @@
 
-using Etape1;
+using Etape2;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,7 +7,7 @@ using System.Xml.Serialization;
 using System.Text.Json;
 
 
-namespace Etape1
+namespace Etape2
 {
     public class Graph<T>
     {

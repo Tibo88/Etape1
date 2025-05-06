@@ -1,16 +1,18 @@
+
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using MySql.Data.MySqlClient;
 using SkiaSharp;
 
-namespace Etape2
+namespace Etape1
 {
     public class GraphRelation
     {
         private Dictionary<string, Utilisateur> Utilisateurs { get; set; }
         private Dictionary<string, List<string>> ListeAdjacence { get; set; }
-        private string connectionString = "server=localhost;database=AppliV3;user=root;password=&Mot2passe;";
+        private string connectionString = "server=localhost;database=AppliV3;user=root;password=root88;";
 
         public GraphRelation()
         {
@@ -174,6 +176,22 @@ namespace Etape2
                 {
                     data.SaveTo(stream);
                     Console.WriteLine("Le graphe a été sauvegardé dans : " + nomFichier);
+                }
+                using (var image = surface.Snapshot())
+                using (var data = image.Encode())
+                using (var stream = File.OpenWrite(nomFichier))
+                {
+                    data.SaveTo(stream);
+                    Console.WriteLine("Le graphe a été sauvegardé dans : " + nomFichier);
+                }
+
+                try
+                {
+                    Process.Start(new ProcessStartInfo(nomFichier) { UseShellExecute = true });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Erreur lors de l'ouverture du fichier : {ex.Message}");
                 }
             }
         }

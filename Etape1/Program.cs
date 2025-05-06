@@ -446,7 +446,7 @@ class Program
                     VoirCommandes();
                     break;
                 case "2":
-                    AjouterPlatDisponible();
+                    AjouterPlatDisponible(username);
                     break;
                 case "3":
                     SupprimerCompte(username, graphe);
@@ -551,8 +551,6 @@ class Program
             }
         }
     }
-
-
     /// <summary>
     /// Permet de passer une commande
     /// </summary>
@@ -575,40 +573,6 @@ class Program
                 idCommande = Convert.ToInt32(cmd.ExecuteScalar());
             }
 
-            // Choisir un cuisinier (exemple : premier cuisinier disponible)
-            string cuisinierId;
-            string cuisinierQuery = "SELECT identifiant FROM cuisinier LIMIT 1";  // Choix arbitraire du premier cuisinier
-            using (MySqlCommand cmd = new MySqlCommand(cuisinierQuery, conn))
-            {
-                object result = cmd.ExecuteScalar();
-                if (result == null)
-                {
-                    Console.WriteLine("Aucun cuisinier disponible.");
-                    return;
-                }
-                cuisinierId = result.ToString();
-            }
-
-            // Insérer une nouvelle commande avec client et cuisinier
-            string queryInsertCommande = @"
-        INSERT INTO commande (numero_commande, client_id, cuisinier_id, date_commande)
-        VALUES (@numero, @client_id, @cuisinier_id, CURDATE())";
-            using (MySqlCommand cmd = new MySqlCommand(queryInsertCommande, conn))
-            {
-                cmd.Parameters.AddWithValue("@numero", idCommande);
-                cmd.Parameters.AddWithValue("@client_id", username);  // client connecté
-                cmd.Parameters.AddWithValue("@cuisinier_id", cuisinierId);  // cuisinier choisi
-                cmd.ExecuteNonQuery();
-            }
-
-            // Récupérer et incrémenter l'ID de la sous-commande
-            int idSousCommande;
-            string queryGetMaxSousCommande = "SELECT IFNULL(MAX(id_sous_commandes), 0) + 1 FROM sous_commandes";
-            using (MySqlCommand cmd = new MySqlCommand(queryGetMaxSousCommande, conn))
-            {
-                idSousCommande = Convert.ToInt32(cmd.ExecuteScalar());
-            }
-
             // Choix du plat
             Console.WriteLine("\nVoulez-vous :");
             Console.WriteLine("1. Commander un plat déjà préparé");
@@ -620,11 +584,13 @@ class Program
             string nomPlat = "";
             decimal prixPlat = 0;
             int quantite = 1;
+            string cuisinierId = ""; // Déclaré ici pour être utilisé plus tard
 
             if (choix == "1") // Choisir un plat déjà préparé
             {
                 Console.WriteLine("\nPlats disponibles :");
-                string query = "SELECT id_plat, nom, prix, quantite FROM plat WHERE quantite > 0";
+                // Modification: On récupère aussi le cuisinier_id du plat
+                string query = "SELECT p.id_plat, p.nom, p.prix, p.quantite, p.cuisinier_id FROM plat p WHERE p.quantite > 0";
                 using (MySqlCommand cmd = new MySqlCommand(query, conn))
                 using (MySqlDataReader reader = cmd.ExecuteReader())
                 {
@@ -641,7 +607,8 @@ class Program
                     return;
                 }
 
-                string queryPlat = "SELECT nom, prix, quantite FROM plat WHERE id_plat = @idPlat";
+                // Modification: On récupère aussi le cuisinier_id
+                string queryPlat = "SELECT nom, prix, quantite, cuisinier_id FROM plat WHERE id_plat = @idPlat";
                 using (MySqlCommand cmd = new MySqlCommand(queryPlat, conn))
                 {
                     cmd.Parameters.AddWithValue("@idPlat", idPlatChoisi);
@@ -652,6 +619,7 @@ class Program
                             nomPlat = reader.GetString(0);
                             prixPlat = reader.GetDecimal(1);
                             quantite = reader.GetInt32(2);
+                            cuisinierId = reader.GetString(3); // Récupération du cuisinier
                         }
                         else
                         {
@@ -684,19 +652,36 @@ class Program
                 Console.Write("Entrez la quantité souhaitée : ");
                 quantite = int.Parse(Console.ReadLine());
 
+                // Modification: On demande quel cuisinier crée le plat
+                Console.WriteLine("\nCuisiniers disponibles :");
+                string queryCuisiniers = "SELECT identifiant, nom FROM cuisinier";
+                using (MySqlCommand cmd = new MySqlCommand(queryCuisiniers, conn))
+                using (MySqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        Console.WriteLine($"ID: {reader.GetString(0)}, Nom: {reader.GetString(1)}");
+                    }
+                }
+
+                Console.Write("Entrez l'ID du cuisinier qui prépare ce plat : ");
+                cuisinierId = Console.ReadLine();
+
                 string queryGetMaxPlat = "SELECT IFNULL(MAX(id_plat), 0) + 1 FROM plat";
                 using (MySqlCommand cmd = new MySqlCommand(queryGetMaxPlat, conn))
                 {
                     idPlatChoisi = Convert.ToInt32(cmd.ExecuteScalar());
                 }
 
-                string queryInsertPlat = "INSERT INTO plat (id_plat, nom, prix, quantite) VALUES (@idPlat, @nomPlat, @prixPlat, @quantite)";
+                // Modification: On ajoute le cuisinier_id lors de la création du plat
+                string queryInsertPlat = "INSERT INTO plat (id_plat, nom, prix, quantite, cuisinier_id) VALUES (@idPlat, @nomPlat, @prixPlat, @quantite, @cuisinierId)";
                 using (MySqlCommand cmd = new MySqlCommand(queryInsertPlat, conn))
                 {
                     cmd.Parameters.AddWithValue("@idPlat", idPlatChoisi);
                     cmd.Parameters.AddWithValue("@nomPlat", nomPlat);
                     cmd.Parameters.AddWithValue("@prixPlat", prixPlat);
                     cmd.Parameters.AddWithValue("@quantite", quantite);
+                    cmd.Parameters.AddWithValue("@cuisinierId", cuisinierId);
                     cmd.ExecuteNonQuery();
                 }
             }
@@ -704,6 +689,26 @@ class Program
             {
                 Console.WriteLine("Choix invalide !");
                 return;
+            }
+
+            // Insérer la commande avec le cuisinier associé au plat
+            string queryInsertCommande = @"
+            INSERT INTO commande (numero_commande, client_id, cuisinier_id, date_commande)
+            VALUES (@numero, @client_id, @cuisinier_id, CURDATE())";
+            using (MySqlCommand cmd = new MySqlCommand(queryInsertCommande, conn))
+            {
+                cmd.Parameters.AddWithValue("@numero", idCommande);
+                cmd.Parameters.AddWithValue("@client_id", username);
+                cmd.Parameters.AddWithValue("@cuisinier_id", cuisinierId); // Utilisation du cuisinier du plat
+                cmd.ExecuteNonQuery();
+            }
+
+            // Récupérer et incrémenter l'ID de la sous-commande
+            int idSousCommande;
+            string queryGetMaxSousCommande = "SELECT IFNULL(MAX(id_sous_commandes), 0) + 1 FROM sous_commandes";
+            using (MySqlCommand cmd = new MySqlCommand(queryGetMaxSousCommande, conn))
+            {
+                idSousCommande = Convert.ToInt32(cmd.ExecuteScalar());
             }
 
             // Insérer la sous-commande
@@ -717,7 +722,7 @@ class Program
                 cmd.ExecuteNonQuery();
             }
 
-            Console.WriteLine($"Commande enregistrée avec succès ! (Commande ID: {idCommande}, Plat: {nomPlat})");
+            Console.WriteLine($"Commande enregistrée avec succès ! (Commande ID: {idCommande}, Plat: {nomPlat}, Cuisinier: {cuisinierId})");
         }
     }
 
@@ -747,7 +752,7 @@ class Program
     /// <summary>
     /// Ajoute un plat disponible.
     /// </summary>
-    static void AjouterPlatDisponible()
+    static void AjouterPlatDisponible(string id_cuisinier)
     {
         Console.Write("\nEntrez le nom du plat préparé : ");
         string nomPlat = Console.ReadLine();
@@ -770,13 +775,14 @@ class Program
             }
 
             // Insérer le plat dans la table plat
-            query = "INSERT INTO plat (id_plat, nom, prix, quantite) VALUES (@idPlat, @nomPlat, @prixPlat, @quantitePlat)";
+            query = "INSERT INTO plat (id_plat, nom, prix, quantite,cuisinier_id) VALUES (@idPlat, @nomPlat, @prixPlat, @quantitePlat,@cuisinier_id)";
             using (MySqlCommand cmd = new MySqlCommand(query, conn))
             {
                 cmd.Parameters.AddWithValue("@idPlat", nouvelIdPlat);
                 cmd.Parameters.AddWithValue("@nomPlat", nomPlat);
                 cmd.Parameters.AddWithValue("@prixPlat", prixPlat);
                 cmd.Parameters.AddWithValue("@quantitePlat", quantitePlat);
+                cmd.Parameters.AddWithValue("@cuisinier_id", id_cuisinier);
                 cmd.ExecuteNonQuery();
             }
         }

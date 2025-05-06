@@ -1,10 +1,13 @@
-using Etape2;
+
+using Etape1;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
 using System.Text.Json;
-namespace Etape2
+
+
+namespace Etape1
 {
     public class Graph<T>
     {
@@ -23,6 +26,17 @@ namespace Etape2
             ListeAdjacence = new Dictionary<T, List<T>>();
             StationsParNom = new Dictionary<string, List<T>>();
         }
+
+        /// <summary>
+        /// Ajoute un nouveau noeud au graphe.
+        /// </summary>
+        /// <param name="id">L'ID unique du noeud.</param>
+        /// <param name="libelle">Le nom du noeud.</param>
+        /// <param name="ligneLibelle">Le libellé de la ligne de métro.</param>
+        /// <param name="longitude">La longitude du noeud.</param>
+        /// <param name="latitude">La latitude du noeud.</param>
+        /// <param name="commune">La commune associée au noeud.</param>
+        /// <param name="codeCommune">Le code de la commune.</param>
         public void AjouterNoeud(T id, string libelle, string ligneLibelle, double longitude, double latitude, string commune, string codeCommune)
         {
             if (!Noeuds.ContainsKey(id))
@@ -39,7 +53,14 @@ namespace Etape2
         }
 
 
-
+        /// <summary>
+        /// Ajoute un lien entre deux stations (noeuds) avec les informations de temps de trajet et de changement.
+        /// </summary>
+        /// <param name="idStation1">L'ID de la première station (source).</param>
+        /// <param name="idStation2">L'ID de la deuxième station (destination).</param>
+        /// <param name="tempsTrajet">Le temps de trajet entre les deux stations.</param>
+        /// <param name="tempsChangement">Le temps de changement entre les stations.</param>
+        /// <param name="distance">La distance entre les stations.</param>
         public void AjouterLien(T idStation1, T idStation2, double tempsTrajet, double tempsChangement, double distance)
         {
             // Vérifiez que les deux noeuds existent et qu'ils ne sont pas les mêmes
@@ -71,6 +92,12 @@ namespace Etape2
                 }
             }
         }
+
+        /// <summary>
+        /// Charge les noeuds et les arcs depuis des fichiers CSV spécifiés.
+        /// </summary>
+        /// <param name="fichierNoeuds">Le chemin du fichier contenant les informations sur les noeuds.</param>
+        /// <param name="fichierArcs">Le chemin du fichier contenant les informations sur les arcs.</param>
         public void ChargerDepuisFichier(string fichierNoeuds, string fichierArcs)
         {
             // Charger les noeuds
@@ -147,6 +174,10 @@ namespace Etape2
             }
         }
 
+        /// <summary>
+        /// Ajoute des liens manquants entre les stations qui partagent le même nom (ex. stations situées sur la même ligne de métro).
+        /// Cette méthode crée des liens entre chaque paire de stations ayant le même nom (même ligne).
+        /// </summary>
         public void AjouterLiensManquants()
         {
             foreach (var groupeNom in StationsParNom.Values)
@@ -177,7 +208,13 @@ namespace Etape2
 
 
 
-
+        /// <summary>
+        /// Calcule la distance entre deux stations en utilisant la formule de Haversine.
+        /// La formule de Haversine permet de calculer la distance entre deux points sur une sphère en fonction de leurs latitudes et longitudes.
+        /// </summary>
+        /// <param name="id1">L'ID du premier noeud (station).</param>
+        /// <param name="id2">L'ID du deuxième noeud (station).</param>
+        /// <returns>La distance en kilomètres entre les deux stations.</returns>
         private double CalculerDistance(T id1, T id2)
         {
             var noeud1 = Noeuds[id1];
@@ -196,6 +233,11 @@ namespace Etape2
             return R * c;
         }
 
+
+        /// <summary>
+        /// Crée la liste d'adjacence à partir des liens entre les stations.
+        /// La liste d'adjacence permet de représenter les voisins de chaque station dans le graphe.
+        /// </summary>
         public void CreerListeAdjacence()
         {
             ListeAdjacence.Clear();
@@ -229,7 +271,9 @@ namespace Etape2
 
 
 
-
+        /// <summary>
+        /// Affiche la liste d'adjacence du graphe, qui montre les voisins de chaque station.
+        /// </summary>
         public void AfficherListe()
         {
             Console.WriteLine("Liste d'adjacence :");
@@ -257,7 +301,13 @@ namespace Etape2
             }
         }
 
-
+        /// <summary>
+        /// Applique l'algorithme de Dijkstra pour trouver le chemin le plus court entre deux stations.
+        /// Cet algorithme trouve le plus court chemin dans un graphe pondéré à partir d'un noeud de départ vers un noeud de destination.
+        /// </summary>
+        /// <param name="start">L'ID de la station de départ.</param>
+        /// <param name="end">L'ID de la station de destination.</param>
+        /// <returns>La liste des stations représentant le chemin le plus court entre les deux stations.</returns>
         public List<T> Dijkstra(T start, T end)
         {
             var distances = new Dictionary<T, double>();
@@ -323,7 +373,13 @@ namespace Etape2
 
 
 
-
+        /// <summary>
+        /// Reconstruit le chemin le plus court entre deux stations à partir des prédécesseurs calculés par l'algorithme de Dijkstra.
+        /// </summary>
+        /// <param name="predecessors">Un dictionnaire associant chaque station à son prédécesseur dans le chemin le plus court.</param>
+        /// <param name="start">La station de départ.</param>
+        /// <param name="end">La station de destination.</param>
+        /// <returns>La liste des stations représentant le chemin le plus court.</returns>
         private List<T> ReconstructPath(Dictionary<T, T> predecessors, T start, T end)
         {
             var path = new List<T>();
@@ -347,6 +403,13 @@ namespace Etape2
             return path;
         }
 
+
+        /// <summary>
+        /// Récupère le temps de trajet entre deux stations à partir des liens existants dans le graphe.
+        /// </summary>
+        /// <param name="depart">L'ID de la station de départ.</param>
+        /// <param name="arrivee">L'ID de la station d'arrivée.</param>
+        /// <returns>Le temps de trajet entre les deux stations.</returns>
         private double GetTempsTrajet(T depart, T arrivee)
         {
             var lien = Noeuds[depart].Liens.FirstOrDefault(l => l.Destination.Id.Equals(arrivee));
@@ -354,7 +417,11 @@ namespace Etape2
         }
 
 
-
+        /// <summary>
+        /// Calcule le temps total du trajet en fonction des stations présentes dans le chemin.
+        /// </summary>
+        /// <param name="chemin">Le chemin sous forme de liste de stations (noeuds).</param>
+        /// <returns>Le temps total du trajet.</returns>
         public double CalculerTempsTrajet(List<T> chemin)
         {
             double tempsTotal = 0;
@@ -382,6 +449,10 @@ namespace Etape2
         }
 
 
+        /// <summary>
+        /// Affiche le chemin trouvé entre deux stations et son temps total de trajet.
+        /// </summary>
+        /// <param name="chemin">La liste des stations représentant le chemin.</param>
 
         public void AfficherChemin(List<T> chemin)
         {
@@ -407,7 +478,9 @@ namespace Etape2
         }
 
 
-
+        /// <summary>
+        /// Applique l'algorithme de Floyd-Warshall pour calculer le plus court chemin entre toutes les paires de stations.
+        /// </summary>
         public void FloydWarshall()
         {
             int n = Noeuds.Count;
@@ -488,7 +561,12 @@ namespace Etape2
 
 
 
-        // Fonction pour récupérer le chemin le plus court entre deux sommets
+        /// <summary>
+        /// Affiche le chemin le plus court entre deux stations en utilisant les résultats de l'algorithme de Floyd-Warshall.
+        /// Cette méthode récupère le chemin à partir des prédécesseurs calculés et affiche le trajet ainsi que le temps total.
+        /// </summary>
+        /// <param name="depart">L'ID de la station de départ.</param>
+        /// <param name="arrivee">L'ID de la station d'arrivée.</param>
         public void AfficherCheminPlusCourt(T depart, T arrivee)
         {
             if (!IdToIndex.ContainsKey(depart) || !IdToIndex.ContainsKey(arrivee))
@@ -539,7 +617,13 @@ namespace Etape2
 
 
 
-
+        /// <summary>
+        /// Implémente l'algorithme de Bellman-Ford pour trouver le plus court chemin dans un graphe avec des poids d'arêtes.
+        /// L'algorithme calcule les distances minimales depuis une station de départ vers toutes les autres stations.
+        /// </summary>
+        /// <param name="start">L'ID de la station de départ.</param>
+        /// <param name="end">L'ID de la station d'arrivée.</param>
+        /// <returns>Une liste des stations représentant le chemin le plus court entre les deux stations, ou null si aucun chemin n'existe.</returns>
         public List<T> BellmanFord(T start, T end)
         {
             var distances = new Dictionary<T, double>();

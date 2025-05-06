@@ -6,7 +6,7 @@ using System.Diagnostics;
 using MySql.Data.MySqlClient;
 using SkiaSharp;
 
-namespace Etape1
+namespace Etape2
 {
     public class GraphRelation
     {

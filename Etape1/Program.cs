@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 
 class Program
 {
-    static string connectionString = "server=localhost;database=AppliV3;user=root;password=root88;";
+    static string connectionString = "server=localhost;database=AppliV3;user=root;password=&Mot2passe;";
 
     static void Main()
     {
@@ -19,26 +19,26 @@ class Program
         graphe.ChargerDepuisFichier("Noeuds2.txt", "Arcs2.txt");
         graphe.AjouterLiensManquants();
 
-        Console.WriteLine("Liste d'adjacence:");
+        //Console.WriteLine("Liste d'adjacence:");
         graphe.CreerListeAdjacence();
-        graphe.AfficherListe();
-        Console.WriteLine();
+        //graphe.AfficherListe();
+        //Console.WriteLine();
 
-        Console.WriteLine("Exécution de Floyd-Warshall");
-        graphe.FloydWarshall();
-        graphe.AfficherCheminPlusCourt(24, 240);
-        Console.WriteLine();
+        //Console.WriteLine("Exécution de Floyd-Warshall");
+        //graphe.FloydWarshall();
+        //graphe.AfficherCheminPlusCourt(24, 240);
+        //Console.WriteLine();
 
-        Console.WriteLine("Exécution de Dijkstra");
-        List<int> cheminDijkstra = graphe.Dijkstra(1, 3);
-        graphe.AfficherChemin(cheminDijkstra);
-        Console.WriteLine();
+        //Console.WriteLine("Exécution de Dijkstra");
+        //List<int> cheminDijkstra = graphe.Dijkstra(1, 3);
+        //graphe.AfficherChemin(cheminDijkstra);
+        //Console.WriteLine();
 
-        Console.WriteLine("Exécution de Bellman-Ford");
-        List<int> cheminBellmanFord = graphe.BellmanFord(113, 225);
-        graphe.AfficherChemin(cheminBellmanFord);
+        //Console.WriteLine("Exécution de Bellman-Ford");
+        //List<int> cheminBellmanFord = graphe.BellmanFord(113, 225);
+        //graphe.AfficherChemin(cheminBellmanFord);
         string nomFichier = "plan_metro_parisien.png";
-        GraphForm.GenererPlanDuMetro(graphe, nomFichier, cheminBellmanFord);
+        GraphForm.GenererPlanDuMetro(graphe, nomFichier);
 
         try
         {
@@ -48,7 +48,7 @@ class Program
         {
             Console.WriteLine($"Erreur lors de l'ouverture du fichier : {ex.Message}");
         }
-
+        Console.WriteLine("Bienvenue dans l'application Liv'in Paris");
 
         MenuPrincipal(graphe);
 
@@ -96,9 +96,11 @@ class Program
     /// <param name="graphe">Le graphe des stations de métro.</param>
     static void MenuPrincipal(Graph<int> graphe)
     {
-        Console.WriteLine("Bienvenue dans l'application de commande !");
+
         while (true)
         {
+            Console.WriteLine();
+
             Console.WriteLine("1. Créer un compte");
             Console.WriteLine("2. Se connecter");
             Console.WriteLine("3. Accéder au module administrateur");
@@ -138,6 +140,8 @@ class Program
     /// </summary>
     static void MenuAdministrateur()
     {
+        Console.WriteLine();
+
         while (true)
         {
             Console.WriteLine("\nMenu Administrateur");
@@ -170,6 +174,7 @@ class Program
     {
         using (MySqlConnection conn = new MySqlConnection(connectionString))
         {
+            Console.WriteLine();
             conn.Open();
             string query = "SELECT identifiant, nom, prenom FROM client_particulier ORDER BY nom, prenom";
             using (MySqlCommand cmd = new MySqlCommand(query, conn))
@@ -194,6 +199,7 @@ class Program
     {
         using (MySqlConnection conn = new MySqlConnection(connectionString))
         {
+            Console.WriteLine();
             conn.Open();
             string query = "SELECT identifiant, nom, prenom, adresse FROM client_particulier";
             using (MySqlCommand cmd = new MySqlCommand(query, conn))
@@ -321,6 +327,7 @@ class Program
                 cmd.ExecuteNonQuery();
             }
         }
+        Console.WriteLine();
 
         Console.WriteLine($"Compte {type} créé avec succès !");
     }
@@ -723,6 +730,7 @@ class Program
     {
         using (MySqlConnection conn = new MySqlConnection(connectionString))
         {
+            Console.WriteLine();
             conn.Open();
             string query = "SELECT id_sous_commandes, adresse_livraison FROM sous_commandes";
             using (MySqlCommand cmd = new MySqlCommand(query, conn))
@@ -772,7 +780,7 @@ class Program
                 cmd.ExecuteNonQuery();
             }
         }
-
+        Console.WriteLine();
         Console.WriteLine($"Plat ajouté avec succès avec l'ID : {nouvelIdPlat} !");
     }
     static int ObtenirStationUtilisateur(string identifiant, string table)

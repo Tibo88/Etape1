@@ -22,6 +22,9 @@ namespace Etape1
             CreerListeAdjacence();
         }
 
+        /// <summary>
+        /// Charge les données des utilisateurs depuis la base de données.
+        /// </summary>
         private void ChargerDonneesDepuisBase()
         {
             using (MySqlConnection conn = new MySqlConnection(connectionString))
@@ -89,7 +92,9 @@ namespace Etape1
             }
         }
 
-
+        /// <summary>
+        /// Crée la liste d'adjacence à partir des liens entre les utilisateurs.
+        /// </summary>
         private void CreerListeAdjacence()
         {
             ListeAdjacence.Clear();
@@ -107,6 +112,11 @@ namespace Etape1
             }
         }
 
+        /// <summary>
+        /// Ajoute un lien entre un client et un cuisinier.
+        /// </summary>
+        /// <param name="clientId">L'ID du client.</param>
+        /// <param name="cuisinierId">L'ID du cuisinier.</param>
         public void AjouterLien(string clientId, string cuisinierId)
         {
             if (Utilisateurs.ContainsKey(clientId) && Utilisateurs.ContainsKey(cuisinierId))
@@ -117,6 +127,9 @@ namespace Etape1
             }
         }
 
+        /// <summary>
+        /// Affiche la liste d'adjacence des utilisateurs.
+        /// </summary>
         public void AfficherListeAdjacence()
         {
             Console.WriteLine("Liste d'adjacence :");
@@ -127,6 +140,10 @@ namespace Etape1
             }
         }
 
+        /// <summary>
+        /// Génère et affiche le graphe des relations entre les utilisateurs.
+        /// </summary>
+        /// <param name="nomFichier">Le nom du fichier où sauvegarder le graphe.</param>
         public void GenererGraphe(string nomFichier)
         {
             int largeurImage = 1000;

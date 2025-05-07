@@ -38,11 +38,27 @@ namespace Etape2
                 {
                     while (reader.Read())
                     {
-                        string identifiant = reader.IsDBNull(0) ? "N/A" : reader.GetString(0);
-                        string nom = reader.IsDBNull(1) ? "N/A" : reader.GetString(1);
-                        string prenom = reader.IsDBNull(2) ? "N/A" : reader.GetString(2);
+                        string identifiant;
+                        if (reader.IsDBNull(0))
+                            identifiant = "N/A";
+                        else
+                            identifiant = reader.GetString(0);
+
+                        string nom;
+                        if (reader.IsDBNull(1))
+                            nom = "N/A";
+                        else
+                            nom = reader.GetString(1);
+
+                        string prenom;
+                        if (reader.IsDBNull(2))
+                            prenom = "N/A";
+                        else
+                            prenom = reader.GetString(2);
+
                         Utilisateurs[identifiant] = new Utilisateur(identifiant, nom, prenom, "client_particulier");
-                        Console.WriteLine($"Client particulier chargé : {identifiant} - {nom} {prenom}");
+
+                        //Console.WriteLine($"Client particulier chargé : {identifiant} - {nom} {prenom}");
                     }
                 }
 
@@ -53,11 +69,27 @@ namespace Etape2
                 {
                     while (reader.Read())
                     {
-                        string identifiant = reader.IsDBNull(0) ? "N/A" : reader.GetString(0);
-                        string nom = reader.IsDBNull(1) ? "N/A" : reader.GetString(1);
-                        string prenom = reader.IsDBNull(2) ? "N/A" : reader.GetString(2);
+                        string identifiant;
+                        if (reader.IsDBNull(0))
+                            identifiant = "N/A";
+                        else
+                            identifiant = reader.GetString(0);
+
+                        string nom;
+                        if (reader.IsDBNull(1))
+                            nom = "N/A";
+                        else
+                            nom = reader.GetString(1);
+
+                        string prenom;
+                        if (reader.IsDBNull(2))
+                            prenom = "N/A";
+                        else
+                            prenom = reader.GetString(2);
+
                         Utilisateurs[identifiant] = new Utilisateur(identifiant, nom, prenom, "client_entreprise");
-                        Console.WriteLine($"Client entreprise chargé : {identifiant} - {nom} {prenom}");
+
+                        // Console.WriteLine($"Client entreprise chargé : {identifiant} - {nom} {prenom}");
                     }
                 }
 
@@ -68,11 +100,27 @@ namespace Etape2
                 {
                     while (reader.Read())
                     {
-                        string identifiant = reader.IsDBNull(0) ? "N/A" : reader.GetString(0);
-                        string nom = reader.IsDBNull(1) ? "N/A" : reader.GetString(1);
-                        string prenom = reader.IsDBNull(2) ? "N/A" : reader.GetString(2);
+                        string identifiant;
+                        if (reader.IsDBNull(0))
+                            identifiant = "N/A";
+                        else
+                            identifiant = reader.GetString(0);
+
+                        string nom;
+                        if (reader.IsDBNull(1))
+                            nom = "N/A";
+                        else
+                            nom = reader.GetString(1);
+
+                        string prenom;
+                        if (reader.IsDBNull(2))
+                            prenom = "N/A";
+                        else
+                            prenom = reader.GetString(2);
+
                         Utilisateurs[identifiant] = new Utilisateur(identifiant, nom, prenom, "cuisinier");
-                        Console.WriteLine($"Cuisinier chargé : {identifiant} - {nom} {prenom}");
+
+                        // Console.WriteLine($"Cuisinier chargé : {identifiant} - {nom} {prenom}");
                     }
                 }
 
@@ -83,10 +131,21 @@ namespace Etape2
                 {
                     while (reader.Read())
                     {
-                        string clientId = reader.IsDBNull(0) ? "N/A" : reader.GetString(0);
-                        string cuisinierId = reader.IsDBNull(1) ? "N/A" : reader.GetString(1);
+                        string clientId;
+                        if (reader.IsDBNull(0))
+                            clientId = "N/A";
+                        else
+                            clientId = reader.GetString(0);
+
+                        string cuisinierId;
+                        if (reader.IsDBNull(1))
+                            cuisinierId = "N/A";
+                        else
+                            cuisinierId = reader.GetString(1);
+
                         AjouterLien(clientId, cuisinierId);
-                        Console.WriteLine($"Commande chargée : Client {clientId} -> Cuisinier {cuisinierId}");
+
+                        //Console.WriteLine($"Commande chargée : Client {clientId} -> Cuisinier {cuisinierId}");
                     }
                 }
             }
@@ -132,11 +191,11 @@ namespace Etape2
         /// </summary>
         public void AfficherListeAdjacence()
         {
-            Console.WriteLine("Liste d'adjacence :");
+            //Console.WriteLine("Liste d'adjacence :");
             foreach (var utilisateur in ListeAdjacence)
             {
-                Console.Write($"{utilisateur.Key} -> ");
-                Console.WriteLine(string.Join(", ", utilisateur.Value));
+               // Console.Write($"{utilisateur.Key} -> ");
+               // Console.WriteLine(string.Join(", ", utilisateur.Value));
             }
         }
 
@@ -192,15 +251,9 @@ namespace Etape2
                 using (var stream = File.OpenWrite(nomFichier))
                 {
                     data.SaveTo(stream);
-                    Console.WriteLine("Le graphe a été sauvegardé dans : " + nomFichier);
+                    //Console.WriteLine("Le graphe a été sauvegardé dans : " + nomFichier);
                 }
-                using (var image = surface.Snapshot())
-                using (var data = image.Encode())
-                using (var stream = File.OpenWrite(nomFichier))
-                {
-                    data.SaveTo(stream);
-                    Console.WriteLine("Le graphe a été sauvegardé dans : " + nomFichier);
-                }
+                
 
                 try
                 {

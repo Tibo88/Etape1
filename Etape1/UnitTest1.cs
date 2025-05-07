@@ -6,7 +6,7 @@ namespace Test_unitaire_rendu_3
     public class UnitTest1
     {
         [TestMethod]
-        public void CalculerDistance_EntreDeuxStationsConnues_DonneBonneValeur()
+        public void TestCalculerDistance()
         {
             var graphe = new Graph<int>();
             graphe.AjouterNoeud(1, "Station A", "Ligne 1", 2.3522, 48.8566, "Paris", "75000"); 

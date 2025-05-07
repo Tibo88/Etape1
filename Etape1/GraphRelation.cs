@@ -6,14 +6,14 @@ using System.Diagnostics;
 using MySql.Data.MySqlClient;
 using SkiaSharp;
 
-namespace Etape2
+namespace Etape1
 {
     public class GraphRelation
     {
         private Dictionary<string, Utilisateur> Utilisateurs { get; set; }
         private Dictionary<string, List<string>> ListeAdjacence { get; set; }
         private Dictionary<string, int> couleurSommets = new Dictionary<string, int>();
-        private string connectionString = "server=localhost;database=AppliV3;user=root;password=&Mot2passe;";
+        private string connectionString = "server=localhost;database=AppliV3;user=root;password=root88;";
 
         public GraphRelation()
         {
@@ -232,7 +232,7 @@ namespace Etape2
             // Afficher les couleurs attribuées
             foreach (var sommet in couleurSommets)
             {
-                Console.WriteLine($"{sommet.Key} a la couleur {sommet.Value}");
+                Console.WriteLine($"Sommet {sommet.Key} a la couleur {sommet.Value}");
             }
         }
 

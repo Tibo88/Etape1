@@ -124,6 +124,8 @@ class Program
                 case "4":
                     GraphRelation grapheRelation = new GraphRelation();
                     grapheRelation.GenererGraphe("graphe_relations.png");
+                    grapheRelation.WelshPowell(); 
+                    grapheRelation.GenererGraphe("graphe_relations_colored.png"); 
                     break;
                 case "5": 
                     AfficherAnnuaireStations();

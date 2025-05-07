@@ -24,7 +24,7 @@ namespace Etape2
         }
 
         /// <summary>
-        /// Charge les données des utilisateurs depuis la base de données.
+        /// Charge les données des utilisateurs depuis la base de données
         /// </summary>
         private void ChargerDonneesDepuisBase()
         {
@@ -153,7 +153,7 @@ namespace Etape2
         }
 
         /// <summary>
-        /// Crée la liste d'adjacence à partir des liens entre les utilisateurs.
+        /// Crée la liste d'adjacence à partir des liens entre les utilisateurs
         /// </summary>
         private void CreerListeAdjacence()
         {
@@ -173,10 +173,10 @@ namespace Etape2
         }
 
         /// <summary>
-        /// Ajoute un lien entre un client et un cuisinier.
+        /// Ajoute un lien entre un client et un cuisinier
         /// </summary>
-        /// <param name="clientId">L'ID du client.</param>
-        /// <param name="cuisinierId">L'ID du cuisinier.</param>
+        /// <param name="clientId">L'ID du client</param>
+        /// <param name="cuisinierId">L'ID du cuisinier</param>
         public void AjouterLien(string clientId, string cuisinierId)
         {
             if (Utilisateurs.ContainsKey(clientId) && Utilisateurs.ContainsKey(cuisinierId))
@@ -189,7 +189,6 @@ namespace Etape2
 
         public void WelshPowell()
         {
-            // Trier les sommets par ordre décroissant de degré
             List<Utilisateur> sommetsTries = new List<Utilisateur>();
             foreach (var utilisateur in Utilisateurs.Values)
             {
@@ -256,9 +255,9 @@ namespace Etape2
         }
 
         /// <summary>
-        /// Génère et affiche le graphe des relations entre les utilisateurs.
+        /// Génère et affiche le graphe des relations entre les utilisateurs
         /// </summary>
-        /// <param name="nomFichier">Le nom du fichier où sauvegarder le graphe.</param>
+        /// <param name="nomFichier">Le nom du fichier où sauvegarder le graphe</param>
         public void GenererGraphe(string nomFichier)
         {
             int largeurImage = 1000;
@@ -326,7 +325,7 @@ namespace Etape2
         }
 
         /// <summary>
-        /// Affiche la liste d'adjacence des utilisateurs.
+        /// Affiche la liste d'adjacence des utilisateurs
         /// </summary>
         public void AfficherListeAdjacence()
         {
@@ -339,9 +338,9 @@ namespace Etape2
         }
 
         /// <summary>
-        /// Génère et affiche le graphe des relations entre les utilisateurs.
+        /// Génère et affiche le graphe des relations entre les utilisateurs
         /// </summary>
-        /// <param name="nomFichier">Le nom du fichier où sauvegarder le graphe.</param>
+        /// <param name="nomFichier">Le nom du fichier où sauvegarder le graphe</param>
 
 
 

@@ -6,14 +6,14 @@ using System.Diagnostics;
 using MySql.Data.MySqlClient;
 using SkiaSharp;
 
-namespace Etape1
+namespace Etape2
 {
     public class GraphRelation
     {
         private Dictionary<string, Utilisateur> Utilisateurs { get; set; }
         private Dictionary<string, List<string>> ListeAdjacence { get; set; }
         private Dictionary<string, int> couleurSommets = new Dictionary<string, int>();
-        private string connectionString = "server=localhost;database=AppliV3;user=root;password=root88;";
+        private string connectionString = "server=localhost;database=AppliV3;user=root;password=&Mot2passe;";
 
         public GraphRelation()
         {
@@ -249,10 +249,10 @@ namespace Etape1
             }
 
             // Afficher les couleurs attribuées
-            foreach (var sommet in couleurSommets)
-            {
-                Console.WriteLine("Sommet " + sommet.Key + " a la couleur " + sommet.Value);
-            }
+            //foreach (var sommet in couleurSommets)
+            //{
+                //Console.WriteLine("Sommet " + sommet.Key + " a la couleur " + sommet.Value);
+            //}
         }
 
         /// <summary>
@@ -342,7 +342,7 @@ namespace Etape1
         /// Génère et affiche le graphe des relations entre les utilisateurs.
         /// </summary>
         /// <param name="nomFichier">Le nom du fichier où sauvegarder le graphe.</param>
-        
+
 
 
     }

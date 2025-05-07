@@ -9,11 +9,11 @@ namespace Etape2
     public class GraphForm
     {
         /// <summary>
-        /// Génère un plan du métro à partir des données de graphes et l'enregistre dans un fichier image.
+        /// Génère un plan du métro à partir des données de graphes et l'enregistre dans un fichier image
         /// </summary>
-        /// <param name="graphe">Le graphe contenant les stations du métro et leurs liens.</param>
-        /// <param name="nomFichier">Le nom du fichier dans lequel l'image sera sauvegardée.</param>
-        /// <param name="chemin">La liste des stations représentant le chemin trouvé.</param>
+        /// <param name="graphe">Le graphe contenant les stations du métro et leurs liens</param>
+        /// <param name="nomFichier">Le nom du fichier dans lequel l'image sera sauvegardée</param>
+        /// <param name="chemin">La liste des stations représentant le chemin trouvé</param>
         public static void GenererPlanDuMetro(Graph<int> graphe, string nomFichier, List<int> chemin = null)
         {
             // Taille de l'image

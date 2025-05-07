@@ -12,13 +12,14 @@ using System.Text.RegularExpressions;
 class Program
 {
     static string connectionString = "server=localhost;database=AppliV3;user=root;password=&Mot2passe;";
+    static Dictionary<int, string> annuaireStations = new Dictionary<int, string>();
 
     static void Main()
     {
         Graph<int> graphe = new Graph<int>();
         graphe.ChargerDepuisFichier("Noeuds2.txt", "Arcs2.txt");
         graphe.AjouterLiensManquants();
-
+        ChargerAnnuaireStations("Noeuds2.txt");
         //Console.WriteLine("Liste d'adjacence:");
         graphe.CreerListeAdjacence();
         //graphe.AfficherListe();
@@ -96,7 +97,6 @@ class Program
     /// <param name="graphe">Le graphe des stations de métro.</param>
     static void MenuPrincipal(Graph<int> graphe)
     {
-
         while (true)
         {
             Console.WriteLine();
@@ -104,8 +104,9 @@ class Program
             Console.WriteLine("1. Créer un compte");
             Console.WriteLine("2. Se connecter");
             Console.WriteLine("3. Accéder au module administrateur");
-            Console.WriteLine("4. Afficher le graphe des relations"); 
-            Console.WriteLine("5. Quitter");
+            Console.WriteLine("4. Afficher le graphe des relations");
+            Console.WriteLine("5. Afficher l'annuaire des stations"); 
+            Console.WriteLine("6. Quitter");
             Console.Write("Votre choix : ");
             string choix = Console.ReadLine();
             switch (choix)
@@ -119,12 +120,14 @@ class Program
                 case "3":
                     MenuAdministrateur();
                     break;
-                case "4": 
+                case "4":
                     GraphRelation grapheRelation = new GraphRelation();
-                    //grapheRelation.AfficherListeAdjacence();
                     grapheRelation.GenererGraphe("graphe_relations.png");
                     break;
-                case "5":
+                case "5": 
+                    AfficherAnnuaireStations();
+                    break;
+                case "6":
                     Environment.Exit(0);
                     break;
                 default:
@@ -133,6 +136,7 @@ class Program
             }
         }
     }
+
 
 
     /// <summary>
@@ -880,6 +884,38 @@ class Program
                     return -1;
                 }
             }
+        }
+    }
+    static void ChargerAnnuaireStations(string fichier)
+    {
+        try
+        {
+            using (StreamReader sr = new StreamReader(fichier))
+            {
+                string ligne;
+                sr.ReadLine();            // Ignorer la première ligne qui contient les en-têtes
+
+                while ((ligne = sr.ReadLine()) != null)
+                {
+                    string[] parties = ligne.Split(',');
+                    if (parties.Length >= 2 && int.TryParse(parties[0], out int id))
+                    {
+                        annuaireStations[id] = parties[2].Trim();
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors du chargement de l'annuaire des stations : {ex.Message}");
+        }
+    }
+    static void AfficherAnnuaireStations()
+    {
+        Console.WriteLine("Annuaire des stations :");
+        foreach (var station in annuaireStations)
+        {
+            Console.WriteLine($"ID: {station.Key}, Nom: {station.Value}");
         }
     }
 }

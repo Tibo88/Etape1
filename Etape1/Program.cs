@@ -104,7 +104,7 @@ class Program
             Console.WriteLine("1. Créer un compte");
             Console.WriteLine("2. Se connecter");
             Console.WriteLine("3. Accéder au module administrateur");
-            Console.WriteLine("4. Afficher le graphe des relations"); // Nouvelle option
+            Console.WriteLine("4. Afficher le graphe des relations"); 
             Console.WriteLine("5. Quitter");
             Console.Write("Votre choix : ");
             string choix = Console.ReadLine();
@@ -119,9 +119,9 @@ class Program
                 case "3":
                     MenuAdministrateur();
                     break;
-                case "4": // Nouvelle option pour afficher le graphe des relations
+                case "4": 
                     GraphRelation grapheRelation = new GraphRelation();
-                    grapheRelation.AfficherListeAdjacence();
+                    //grapheRelation.AfficherListeAdjacence();
                     grapheRelation.GenererGraphe("graphe_relations.png");
                     break;
                 case "5":
@@ -183,10 +183,38 @@ class Program
                 Console.WriteLine("Clients par ordre alphabétique :");
                 while (reader.Read())
                 {
-                    string identifiant = reader.IsDBNull(0) ? "N/A" : reader.GetString(0);
-                    string nom = reader.IsDBNull(1) ? "N/A" : reader.GetString(1);
-                    string prenom = reader.IsDBNull(2) ? "N/A" : reader.GetString(2);
+                    string identifiant;
+                    if (reader.IsDBNull(0))
+                    {
+                        identifiant = "N/A";
+                    }
+                    else
+                    {
+                        identifiant = reader.GetString(0);
+                    }
+
+                    string nom;
+                    if (reader.IsDBNull(1))
+                    {
+                        nom = "N/A";
+                    }
+                    else
+                    {
+                        nom = reader.GetString(1);
+                    }
+
+                    string prenom;
+                    if (reader.IsDBNull(2))
+                    {
+                        prenom = "N/A";
+                    }
+                    else
+                    {
+                        prenom = reader.GetString(2);
+                    }
+
                     Console.WriteLine($"{identifiant} - {nom} {prenom}");
+
                 }
             }
         }
@@ -209,11 +237,48 @@ class Program
                 List<(string Identifiant, string Nom, string Prenom, string Adresse)> clients = new List<(string, string, string, string)>();
                 while (reader.Read())
                 {
-                    string identifiant = reader.IsDBNull(0) ? "N/A" : reader.GetString(0);
-                    string nom = reader.IsDBNull(1) ? "N/A" : reader.GetString(1);
-                    string prenom = reader.IsDBNull(2) ? "N/A" : reader.GetString(2);
-                    string adresse = reader.IsDBNull(3) ? "N/A" : reader.GetString(3);
+                    string identifiant;
+                    if (reader.IsDBNull(0))
+                    {
+                        identifiant = "N/A";
+                    }
+                    else
+                    {
+                        identifiant = reader.GetString(0);
+                    }
+
+                    string nom;
+                    if (reader.IsDBNull(1))
+                    {
+                        nom = "N/A";
+                    }
+                    else
+                    {
+                        nom = reader.GetString(1);
+                    }
+
+                    string prenom;
+                    if (reader.IsDBNull(2))
+                    {
+                        prenom = "N/A";
+                    }
+                    else
+                    {
+                        prenom = reader.GetString(2);
+                    }
+
+                    string adresse;
+                    if (reader.IsDBNull(3))
+                    {
+                        adresse = "N/A";
+                    }
+                    else
+                    {
+                        adresse = reader.GetString(3);
+                    }
+
                     clients.Add((identifiant, nom, prenom, adresse));
+
                 }
 
                 // Trier les clients par nom de rue/avenue
@@ -240,7 +305,7 @@ class Program
     static string ExtraireNomRue(string adresse)
     {
         // Regex pour extraire le nom de la rue/avenue
-        string pattern = @"\d+\s*(rue|avenue|boulevard|impasse|place|chemin|allée|route)\s+(.+)";
+        string pattern = @"\d+\s*(rue|avenue|boulevard|impasse|place|chemin|allée|route)\s+(.+)"; // \d+ : numéro de rue (un ou plusieurs chiffres), \s* : espaces (zéro ou plusieurs) après le numéro, (rue|avenue|boulevard|impasse|place|chemin|allée|route) : correspond à l'un de ces mots pour le type de voie, \s+ : un ou plusieurs espaces après le type de voie, (.+) : capture tout après pour obtenir le nom de la rue.
         Match match = Regex.Match(adresse, pattern, RegexOptions.IgnoreCase);
 
         if (match.Success)
@@ -510,7 +575,14 @@ class Program
             {
                 cmdClient.Parameters.AddWithValue("@idCommande", idCommande);
                 object result = cmdClient.ExecuteScalar();
-                stationClient = (result != null && result != DBNull.Value) ? Convert.ToInt32(result) : -1;
+                if (result != null && result != DBNull.Value)
+                {
+                    stationClient = Convert.ToInt32(result);
+                }
+                else
+                {
+                    stationClient = -1;
+                }
             }
 
 
@@ -799,7 +871,14 @@ class Program
             {
                 cmd.Parameters.AddWithValue("@identifiant", identifiant);
                 object result = cmd.ExecuteScalar();
-                return (result != null && result != DBNull.Value) ? Convert.ToInt32(result) : -1;
+                if (result != null && result != DBNull.Value)
+                {
+                    return Convert.ToInt32(result);
+                }
+                else
+                {
+                    return -1;
+                }
             }
         }
     }

@@ -15,6 +15,8 @@ namespace Etape2
         public double TempsChangement { get; set; }
         public double Distance { get; set; }
 
+   
+
         public Lien(Noeud<T> source, Noeud<T> destination, double tempsTrajet, double tempsChangement, double distance)
         {
             Source = source;

@@ -231,7 +231,7 @@ namespace Etape2
         /// <param name="id2">L'ID du deuxième noeud (station)</param>
         /// <returns>La distance en kilomètres entre les deux stations</returns>
 
-        private double CalculerDistance(T id1, T id2)
+        public double CalculerDistance(T id1, T id2)
         {
             var noeud1 = Noeuds[id1];
             var noeud2 = Noeuds[id2];

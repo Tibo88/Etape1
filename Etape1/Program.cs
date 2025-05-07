@@ -58,9 +58,9 @@ class Program
     }
 
     /// <summary>
-    /// Remplit le graphe des relations clients-cuisiniers à partir de la base de données.
+    /// Remplit le graphe des relations clients-cuisiniers à partir de la base de données
     /// </summary>
-    /// <param name="grapheRelation">Le graphe des relations clients-cuisiniers.</param>
+    /// <param name="grapheRelation">Le graphe des relations clients-cuisiniers</param>
     static void RemplirGrapheDepuisBDD(Graph<string> graphe)
     {
         using (MySqlConnection conn = new MySqlConnection(connectionString))
@@ -93,9 +93,9 @@ class Program
 
 
     /// <summary>
-    /// Affiche le menu principal de l'application.
+    /// Affiche le menu principal de l'application
     /// </summary>
-    /// <param name="graphe">Le graphe des stations de métro.</param>
+    /// <param name="graphe">Le graphe des stations de métro</param>
     static void MenuPrincipal(Graph<int> graphe)
     {
         while (true)
@@ -141,7 +141,7 @@ class Program
 
 
     /// <summary>
-    /// Affiche le menu administrateur.
+    /// Affiche le menu administrateur
     /// </summary>
     static void MenuAdministrateur()
     {
@@ -173,7 +173,7 @@ class Program
     }
 
     /// <summary>
-    /// Affiche les clients par ordre alphabétique.
+    /// Affiche les clients par ordre alphabétique
     /// </summary>
     static void AfficherClientsParOrdreAlphabetique()
     {
@@ -226,7 +226,7 @@ class Program
     }
 
     /// <summary>
-    /// Affiche les clients par nom de rue/avenue.
+    /// Affiche les clients par nom de rue/avenue
     /// </summary>
     static void AfficherClientsParNomRue()
     {
@@ -303,9 +303,9 @@ class Program
     }
 
     /// <summary>
-    /// Extrait le nom de la rue à partir d'une adresse.
+    /// Extrait le nom de la rue à partir d'une adresse
     /// </summary>
-    /// <param name="adresse">L'adresse complète.</param>
+    /// <param name="adresse">L'adresse complète</param>
     /// <returns>Le nom de la rue.</returns>
     static string ExtraireNomRue(string adresse)
     {
@@ -322,7 +322,7 @@ class Program
     }
 
     /// <summary>
-    /// Crée un nouveau compte utilisateur.
+    /// Crée un nouveau compte utilisateur
     /// </summary>
     static void CreerCompte()
     {
@@ -370,7 +370,7 @@ class Program
 
             // Récupérer le dernier 'numero' pour incrémenter
             string query = "SELECT MAX(numero) FROM " + type;
-            int numero = 1; // Si aucun numéro n'est trouvé, on commence à 1.
+            int numero = 1; // Si aucun numéro n'est trouvé, on commence à 1
             using (MySqlCommand cmd = new MySqlCommand(query, conn))
             {
                 object result = cmd.ExecuteScalar();
@@ -381,18 +381,9 @@ class Program
             }
 
             // Insertion du nouvel utilisateur avec le numéro généré
-            query = $"INSERT INTO {type} (numero, identifiant, mot_de_passe, nom, prenom, adresse, telephone, email, metro_proche) VALUES (@numero, @username, @password, @nom, @prenom, @adresse, @telephone, @email, @metroProche)";
+            query = $"INSERT INTO {type} (numero, identifiant, mot_de_passe, nom, prenom, adresse, telephone, email, metro_proche) VALUES ('{numero}', '{username}', '{password}', '{nom}', '{prenom}', '{adresse}', '{telephone}', '{email}', '{metroProche}')";
             using (MySqlCommand cmd = new MySqlCommand(query, conn))
             {
-                cmd.Parameters.AddWithValue("@numero", numero);
-                cmd.Parameters.AddWithValue("@username", username);
-                cmd.Parameters.AddWithValue("@password", password);
-                cmd.Parameters.AddWithValue("@nom", nom);
-                cmd.Parameters.AddWithValue("@prenom", prenom);
-                cmd.Parameters.AddWithValue("@adresse", adresse);
-                cmd.Parameters.AddWithValue("@telephone", telephone);
-                cmd.Parameters.AddWithValue("@email", email);
-                cmd.Parameters.AddWithValue("@metroProche", metroProche);
 
                 cmd.ExecuteNonQuery();
             }
@@ -403,9 +394,9 @@ class Program
     }
 
     /// <summary>
-    /// Connecte un utilisateur existant.
+    /// Connecte un utilisateur existant
     /// </summary>
-    /// <param name="graphe">Le graphe des stations de métro.</param>
+    /// <param name="graphe">Le graphe des stations de métro</param>
     static void SeConnecter(Graph<int> graphe)
     {
         Console.Write("\nNom d'utilisateur : ");
@@ -449,8 +440,8 @@ class Program
     /// <summary>
     /// Affiche le menu client.
     /// </summary>
-    /// <param name="username">Le nom d'utilisateur du client.</param>
-    /// <param name="graphe">Le graphe des stations de métro.</param>
+    /// <param name="username">Le nom d'utilisateur du client</param>
+    /// <param name="graphe">Le graphe des stations de métro</param>
     static void MenuClient(string username, Graph<int> graphe)
     {
         while (true)
@@ -470,10 +461,10 @@ class Program
     }
 
     /// <summary>
-    /// Supprime le compte d'un utilisateur.
+    /// Supprime le compte d'un utilisateur
     /// </summary>
-    /// <param name="username">Le nom d'utilisateur de l'utilisateur à supprimer.</param>
-    /// <param name="graphe">Le graphe des stations de métro.</param>
+    /// <param name="username">Le nom d'utilisateur de l'utilisateur à supprimer</param>
+    /// <param name="graphe">Le graphe des stations de métro</param>
     static void SupprimerCompte(string username, Graph<int> graphe)
     {
         using (MySqlConnection conn = new MySqlConnection(connectionString))
@@ -494,10 +485,10 @@ class Program
     }
 
     /// <summary>
-    /// Affiche le menu cuisinier.
+    /// Affiche le menu cuisinier
     /// </summary>
-    /// <param name="username">Le nom d'utilisateur du cuisinier.</param>
-    /// <param name="graphe">Le graphe des stations de métro.</param>
+    /// <param name="username">Le nom d'utilisateur du cuisinier</param>
+    /// <param name="graphe">Le graphe des stations de métro</param>
     static void MenuCuisinier(string username, Graph<int> graphe)
     {
         while (true)
@@ -631,7 +622,7 @@ class Program
     /// <summary>
     /// Permet de passer une commande
     /// </summary>
-    /// <param name="username">Le nom d'utilisateur de l'utilisateur client souhaitant commander.</param>
+    /// <param name="username">Le nom d'utilisateur de l'utilisateur client souhaitant commander</param>
     static void PasserCommande(string username)
     {
         using (MySqlConnection conn = new MySqlConnection(connectionString))
@@ -806,7 +797,7 @@ class Program
 
 
     /// <summary>
-    /// Affiche les commandes à préparer.
+    /// Affiche les commandes à préparer
     /// </summary>
     static void VoirCommandes()
     {
@@ -827,7 +818,7 @@ class Program
     }
 
     /// <summary>
-    /// Ajoute un plat disponible.
+    /// Ajoute un plat disponible
     /// </summary>
     static void AjouterPlatDisponible(string id_cuisinier)
     {
@@ -850,7 +841,7 @@ class Program
             {
                 nouvelIdPlat = Convert.ToInt32(cmd.ExecuteScalar()) + 1;
             }
-
+            
             // Insérer le plat dans la table plat
             query = "INSERT INTO plat (id_plat, nom, prix, quantite,cuisinier_id) VALUES (@idPlat, @nomPlat, @prixPlat, @quantitePlat,@cuisinier_id)";
             using (MySqlCommand cmd = new MySqlCommand(query, conn))

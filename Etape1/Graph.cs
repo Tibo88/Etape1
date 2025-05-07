@@ -207,9 +207,9 @@ namespace Etape2
                         var idStation2 = groupeNom[j];
 
                         // Ajouter un lien dans les deux sens si le graphe n'est pas orienté
-                        double tempsTrajet = 0; // Vous pouvez définir un temps de trajet par défaut pour les changements de ligne
-                        double tempsChangement = 5; // Exemple de temps de changement, à ajuster selon vos besoins
-                        double distance = 0; // La distance peut être nulle ou une valeur par défaut pour les changements de ligne
+                        double tempsTrajet = 0; // temps de trajet par défaut pour les changements de ligne
+                        double tempsChangement = 5; // Exemple de temps de changement
+                        double distance = 0; // valeur par défaut pour les changements de ligne
 
                         AjouterLien(idStation1, idStation2, tempsTrajet, tempsChangement, distance);
 

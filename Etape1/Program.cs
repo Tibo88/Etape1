@@ -38,6 +38,7 @@ class Program
         //Console.WriteLine("Exécution de Bellman-Ford");
         //List<int> cheminBellmanFord = graphe.BellmanFord(113, 225);
         //graphe.AfficherChemin(cheminBellmanFord);
+
         string nomFichier = "plan_metro_parisien.png";
         GraphForm.GenererPlanDuMetro(graphe, nomFichier);
 
@@ -151,7 +152,7 @@ class Program
             Console.WriteLine("\nMenu Administrateur");
             Console.WriteLine("1. Afficher les clients par ordre alphabétique");
             Console.WriteLine("2. Afficher les clients par nom de rue/avenue");
-            Console.WriteLine("7. Retour au menu principal");
+            Console.WriteLine("3. Retour au menu principal");
             Console.Write("Votre choix : ");
             string choix = Console.ReadLine();
             switch (choix)
@@ -162,7 +163,7 @@ class Program
                 case "2":
                     AfficherClientsParNomRue();
                     break;
-                case "7":
+                case "3":
                     return;
                 default:
                     Console.WriteLine("Choix invalide !");
@@ -190,7 +191,7 @@ class Program
                     string identifiant;
                     if (reader.IsDBNull(0))
                     {
-                        identifiant = "N/A";
+                        identifiant = "";
                     }
                     else
                     {
@@ -200,7 +201,7 @@ class Program
                     string nom;
                     if (reader.IsDBNull(1))
                     {
-                        nom = "N/A";
+                        nom = "";
                     }
                     else
                     {
@@ -210,7 +211,7 @@ class Program
                     string prenom;
                     if (reader.IsDBNull(2))
                     {
-                        prenom = "N/A";
+                        prenom = "";
                     }
                     else
                     {
@@ -244,7 +245,7 @@ class Program
                     string identifiant;
                     if (reader.IsDBNull(0))
                     {
-                        identifiant = "N/A";
+                        identifiant = "";
                     }
                     else
                     {
@@ -254,7 +255,7 @@ class Program
                     string nom;
                     if (reader.IsDBNull(1))
                     {
-                        nom = "N/A";
+                        nom = "";
                     }
                     else
                     {
@@ -264,7 +265,7 @@ class Program
                     string prenom;
                     if (reader.IsDBNull(2))
                     {
-                        prenom = "N/A";
+                        prenom = "";
                     }
                     else
                     {
@@ -274,7 +275,7 @@ class Program
                     string adresse;
                     if (reader.IsDBNull(3))
                     {
-                        adresse = "N/A";
+                        adresse = "";
                     }
                     else
                     {

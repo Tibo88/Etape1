@@ -27,10 +27,23 @@ namespace Etape2
                 canvas.Clear(SKColors.White); // Fond blanc
 
                 // Calculer l'échelle pour convertir les coordonnées de la station en pixels
-                double minLongitude = graphe.Noeuds.Values.Min(n => n.Longitude);
-                double maxLongitude = graphe.Noeuds.Values.Max(n => n.Longitude);
-                double minLatitude = graphe.Noeuds.Values.Min(n => n.Latitude);
-                double maxLatitude = graphe.Noeuds.Values.Max(n => n.Latitude);
+                double minLongitude = double.MaxValue;
+                double maxLongitude = double.MinValue;
+                double minLatitude = double.MaxValue;
+                double maxLatitude = double.MinValue;
+
+                foreach (var noeud in graphe.Noeuds.Values)
+                {
+                    if (noeud.Longitude < minLongitude)
+                        minLongitude = noeud.Longitude;
+                    if (noeud.Longitude > maxLongitude)
+                        maxLongitude = noeud.Longitude;
+                    if (noeud.Latitude < minLatitude)
+                        minLatitude = noeud.Latitude;
+                    if (noeud.Latitude > maxLatitude)
+                        maxLatitude = noeud.Latitude;
+                }
+
 
                 double echelleLongitude = largeurImage / (maxLongitude - minLongitude);
                 double echelleLatitude = hauteurImage / (maxLatitude - minLatitude);
@@ -123,4 +136,3 @@ namespace Etape2
         }
     }
 }
-

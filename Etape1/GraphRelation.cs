@@ -190,9 +190,25 @@ namespace Etape1
         public void ColorierGrapheWelshPowell()
         {
             // Trier les sommets par ordre décroissant de degré
-            var sommetsTries = Utilisateurs.Values
-                .OrderByDescending(u => ListeAdjacence[u.Identifiant].Count)
-                .ToList();
+            List<Utilisateur> sommetsTries = new List<Utilisateur>();
+            foreach (var utilisateur in Utilisateurs.Values)
+            {
+                sommetsTries.Add(utilisateur);
+            }
+
+            // Trier les sommets par degré (décroissant)
+            for (int i = 0; i < sommetsTries.Count - 1; i++)
+            {
+                for (int j = i + 1; j < sommetsTries.Count; j++)
+                {
+                    if (ListeAdjacence[sommetsTries[i].Identifiant].Count < ListeAdjacence[sommetsTries[j].Identifiant].Count)
+                    {
+                        var temp = sommetsTries[i];
+                        sommetsTries[i] = sommetsTries[j];
+                        sommetsTries[j] = temp;
+                    }
+                }
+            }
 
             // Initialiser toutes les couleurs à -1 (non colorié)
             foreach (var sommet in sommetsTries)
@@ -207,7 +223,10 @@ namespace Etape1
             foreach (var sommet in sommetsTries)
             {
                 // Réinitialiser les couleurs utilisées pour chaque sommet
-                Array.Clear(couleursUtilisees, 0, couleursUtilisees.Length);
+                for (int i = 0; i < couleursUtilisees.Length; i++)
+                {
+                    couleursUtilisees[i] = false;
+                }
 
                 // Vérifier les couleurs des voisins
                 foreach (var voisin in ListeAdjacence[sommet.Identifiant])
@@ -232,7 +251,7 @@ namespace Etape1
             // Afficher les couleurs attribuées
             foreach (var sommet in couleurSommets)
             {
-                Console.WriteLine($"Sommet {sommet.Key} a la couleur {sommet.Value}");
+                Console.WriteLine("Sommet " + sommet.Key + " a la couleur " + sommet.Value);
             }
         }
 

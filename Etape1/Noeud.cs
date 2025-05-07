@@ -10,14 +10,16 @@ namespace Etape2
 {
     public class Noeud<T>
     {
-        public T Id { get; }
-        public string Nom { get; }
-        public string LigneLibelle { get; }
-        public double Longitude { get; }
-        public double Latitude { get; }
-        public string Commune { get; }
-        public string CodeInsee { get; }
+        public T Id { get; set; }
+        public string Nom { get; set; }
+        public string LigneLibelle { get; set; }
+        public double Longitude { get; set; }
+        public double Latitude { get; set; }
+        public string Commune { get; set; }
+        public string CodeInsee { get; set; }
         public List<Lien<T>> Liens { get; set; }
+
+
 
         public Noeud(T id, string nom, string ligneLibelle, double longitude, double latitude, string commune, string codeInsee)
         {

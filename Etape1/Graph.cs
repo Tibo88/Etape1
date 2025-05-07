@@ -1,10 +1,12 @@
-using Etape2;
+using Etape1;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
 using System.Text.Json;
-namespace Etape2
+using Etape1;
+
+namespace Etape1
 {
     public class Graph<T>
     {
@@ -70,7 +72,17 @@ namespace Etape2
             var destination = Noeuds[idStation2];
 
             // Vérifiez que le lien n'existe pas déjà
-            if (source.Liens.Any(l => l.Destination.Id.Equals(destination.Id)))
+            bool lienExistant = false;
+            foreach (var l in source.Liens)
+            {
+                if (l.Destination.Id.Equals(destination.Id))
+                {
+                    lienExistant = true;
+                    break;
+                }
+            }
+
+            if (lienExistant)
             {
                 //Console.WriteLine($"Le lien de {idStation1} vers {idStation2} existe déjà.");
                 return;
@@ -81,12 +93,22 @@ namespace Etape2
             source.Liens.Add(lien);
             if (!EstOriente)
             {
-                // Vérifiez également que le lien inverse n'existe pas déjà
-                if (!destination.Liens.Any(l => l.Destination.Id.Equals(source.Id)))
+                bool lienInverseExistant = false;
+                foreach (var l in destination.Liens)
+                {
+                    if (l.Destination.Id.Equals(source.Id))
+                    {
+                        lienInverseExistant = true;
+                        break;
+                    }
+                }
+
+                if (!lienInverseExistant)
                 {
                     destination.Liens.Add(lien);
                 }
             }
+
         }
         /// <summary>
         /// Charge les noeuds et les arcs depuis des fichiers CSV spécifiés.
@@ -113,7 +135,7 @@ namespace Etape2
                         string codeInsee = parties[6].Trim();
 
                         AjouterNoeud(id, nom, ligneMetro, longitude, latitude, commune, codeInsee);
-                       // Console.WriteLine($"Noeud ajouté: {id}");
+                        // Console.WriteLine($"Noeud ajouté: {id}");
                     }
                     catch (Exception e)
                     {
@@ -253,10 +275,19 @@ namespace Etape2
 
                 foreach (var noeudId in groupeNom)
                 {
-                    // Filtrer les voisins pour exclure ceux ayant le même nom que le noeud actuel
-                    var voisinsFiltres = voisinsCommuns.Where(v => !Noeuds[v].Nom.Equals(Noeuds[noeudId].Nom)).ToList();
+                    List<T> voisinsFiltres = new List<T>();
+
+                    foreach (var v in voisinsCommuns)
+                    {
+                        if (!Noeuds[v].Nom.Equals(Noeuds[noeudId].Nom))
+                        {
+                            voisinsFiltres.Add(v);
+                        }
+                    }
+
                     ListeAdjacence[noeudId] = voisinsFiltres;
                 }
+
             }
         }
 

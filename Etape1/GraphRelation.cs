@@ -232,7 +232,7 @@ namespace Etape2
             // Afficher les couleurs attribuées
             foreach (var sommet in couleurSommets)
             {
-                Console.WriteLine($"Sommet {sommet.Key} a la couleur {sommet.Value}");
+                Console.WriteLine($"{sommet.Key} a la couleur {sommet.Value}");
             }
         }
 

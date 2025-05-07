@@ -187,7 +187,7 @@ namespace Etape2
             }
         }
 
-        public void ColorierGrapheWelshPowell()
+        public void WelshPowell()
         {
             // Trier les sommets par ordre décroissant de degré
             List<Utilisateur> sommetsTries = new List<Utilisateur>();

@@ -207,9 +207,9 @@ namespace Etape2
                         var idStation2 = groupeNom[j];
 
                         // Ajouter un lien dans les deux sens si le graphe n'est pas orienté
-                        double tempsTrajet = 0; // temps de trajet par défaut pour les changements de ligne
+                        double tempsTrajet = 0; //temps de trajet par défaut pour les changements de ligne
                         double tempsChangement = 5; // Exemple de temps de changement
-                        double distance = 0; // valeur par défaut pour les changements de ligne
+                        double distance = 0; //valeur par défaut pour les changements de ligne
 
                         AjouterLien(idStation1, idStation2, tempsTrajet, tempsChangement, distance);
 
@@ -407,16 +407,27 @@ namespace Etape2
         {
             var path = new List<T>();
             var equalityComparer = EqualityComparer<T>.Default;
+            var step = end;
 
-            for (var step = end; !equalityComparer.Equals(step, start); step = predecessors.ContainsKey(step) ? predecessors[step] : default(T))
+            while (!equalityComparer.Equals(step, start))
             {
+                if (predecessors.ContainsKey(step))
+                {
+                    step = predecessors[step];
+                }
+                else
+                {
+                    Console.WriteLine($"Erreur : Chemin non trouvé pour le noeud {end}.");
+                    return null;
+                }
+
                 if (!equalityComparer.Equals(step, default(T)))
                 {
                     path.Add(step);
                 }
                 else
                 {
-                    Console.WriteLine($"Erreur : Chemin non trouvé pour le noeud {end}.");
+                    Console.WriteLine($"Erreur : Valeur par défaut atteinte lors de la reconstruction du chemin pour le noeud {end}.");
                     return null;
                 }
             }
@@ -425,6 +436,7 @@ namespace Etape2
             path.Reverse();
             return path;
         }
+
         /// <summary>
         /// Récupère le temps de trajet entre deux stations à partir des liens existants dans le graphe.
         /// </summary>
@@ -433,9 +445,19 @@ namespace Etape2
         /// <returns>Le temps de trajet entre les deux stations.</returns>
         private double GetTempsTrajet(T depart, T arrivee)
         {
-            var lien = Noeuds[depart].Liens.FirstOrDefault(l => l.Destination.Id.Equals(arrivee));
-            return lien != null ? lien.TempsTrajet : double.MaxValue;
+            var liens = Noeuds[depart].Liens;
+
+            foreach (var lien in liens)
+            {
+                if (lien.Destination.Id.Equals(arrivee))
+                {
+                    return lien.TempsTrajet;
+                }
+            }
+
+            return double.MaxValue;
         }
+
 
 
         /// <summary>
@@ -453,7 +475,15 @@ namespace Etape2
                 T arrivee = chemin[i + 1];
 
                 // Trouver le lien entre les deux stations
-                var lien = Noeuds[depart].Liens.FirstOrDefault(l => l.Destination.Id.Equals(arrivee));
+                Lien<T> lien = null;
+                foreach (var l in Noeuds[depart].Liens)
+                {
+                    if (l.Destination.Id.Equals(arrivee))
+                    {
+                        lien = l;
+                        break;
+                    }
+                }
 
                 if (lien != null)
                 {
@@ -657,7 +687,6 @@ namespace Etape2
 
             distances[start] = 0;
 
-            // Relaxation des arêtes
             for (int i = 1; i < Noeuds.Count; i++)
             {
                 foreach (var noeud in Noeuds.Values)

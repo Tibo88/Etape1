@@ -130,7 +130,7 @@ namespace Etape2
                 using (var stream = File.OpenWrite(nomFichier))
                 {
                     data.SaveTo(stream);
-                    Console.WriteLine("Le plan du métro a été sauvegardé dans : " + nomFichier);
+                    //Console.WriteLine("Le plan du métro a été sauvegardé dans : " + nomFichier);
                 }
             }
         }

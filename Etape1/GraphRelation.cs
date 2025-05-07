@@ -12,6 +12,7 @@ namespace Etape2
     {
         private Dictionary<string, Utilisateur> Utilisateurs { get; set; }
         private Dictionary<string, List<string>> ListeAdjacence { get; set; }
+        private Dictionary<string, int> couleurSommets = new Dictionary<string, int>();
         private string connectionString = "server=localhost;database=AppliV3;user=root;password=&Mot2passe;";
 
         public GraphRelation()
@@ -23,7 +24,7 @@ namespace Etape2
         }
 
         /// <summary>
-        /// Charge les données des utilisateurs depuis la base de données
+        /// Charge les données des utilisateurs depuis la base de données.
         /// </summary>
         private void ChargerDonneesDepuisBase()
         {
@@ -40,19 +41,19 @@ namespace Etape2
                     {
                         string identifiant;
                         if (reader.IsDBNull(0))
-                            identifiant = "N/A";
+                            identifiant = "";
                         else
                             identifiant = reader.GetString(0);
 
                         string nom;
                         if (reader.IsDBNull(1))
-                            nom = "N/A";
+                            nom = "";
                         else
                             nom = reader.GetString(1);
 
                         string prenom;
                         if (reader.IsDBNull(2))
-                            prenom = "N/A";
+                            prenom = "";
                         else
                             prenom = reader.GetString(2);
 
@@ -71,19 +72,19 @@ namespace Etape2
                     {
                         string identifiant;
                         if (reader.IsDBNull(0))
-                            identifiant = "N/A";
+                            identifiant = "";
                         else
                             identifiant = reader.GetString(0);
 
                         string nom;
                         if (reader.IsDBNull(1))
-                            nom = "N/A";
+                            nom = "";
                         else
                             nom = reader.GetString(1);
 
                         string prenom;
                         if (reader.IsDBNull(2))
-                            prenom = "N/A";
+                            prenom = "";
                         else
                             prenom = reader.GetString(2);
 
@@ -102,19 +103,19 @@ namespace Etape2
                     {
                         string identifiant;
                         if (reader.IsDBNull(0))
-                            identifiant = "N/A";
+                            identifiant = "";
                         else
                             identifiant = reader.GetString(0);
 
                         string nom;
                         if (reader.IsDBNull(1))
-                            nom = "N/A";
+                            nom = "";
                         else
                             nom = reader.GetString(1);
 
                         string prenom;
                         if (reader.IsDBNull(2))
-                            prenom = "N/A";
+                            prenom = "";
                         else
                             prenom = reader.GetString(2);
 
@@ -133,13 +134,13 @@ namespace Etape2
                     {
                         string clientId;
                         if (reader.IsDBNull(0))
-                            clientId = "N/A";
+                            clientId = "";
                         else
                             clientId = reader.GetString(0);
 
                         string cuisinierId;
                         if (reader.IsDBNull(1))
-                            cuisinierId = "N/A";
+                            cuisinierId = "";
                         else
                             cuisinierId = reader.GetString(1);
 
@@ -152,7 +153,7 @@ namespace Etape2
         }
 
         /// <summary>
-        /// Crée la liste d'adjacence à partir des liens entre les utilisateurs
+        /// Crée la liste d'adjacence à partir des liens entre les utilisateurs.
         /// </summary>
         private void CreerListeAdjacence()
         {
@@ -172,10 +173,10 @@ namespace Etape2
         }
 
         /// <summary>
-        /// Ajoute un lien entre un client et un cuisinier
+        /// Ajoute un lien entre un client et un cuisinier.
         /// </summary>
-        /// <param name="clientId">L'ID du client</param>
-        /// <param name="cuisinierId">L'ID du cuisinier</param>
+        /// <param name="clientId">L'ID du client.</param>
+        /// <param name="cuisinierId">L'ID du cuisinier.</param>
         public void AjouterLien(string clientId, string cuisinierId)
         {
             if (Utilisateurs.ContainsKey(clientId) && Utilisateurs.ContainsKey(cuisinierId))
@@ -186,23 +187,59 @@ namespace Etape2
             }
         }
 
-        /// <summary>
-        /// Affiche la liste d'adjacence des utilisateurs
-        /// </summary>
-        public void AfficherListeAdjacence()
+        public void ColorierGrapheWelshPowell()
         {
-            //Console.WriteLine("Liste d'adjacence :");
-            foreach (var utilisateur in ListeAdjacence)
+            // Trier les sommets par ordre décroissant de degré
+            var sommetsTries = Utilisateurs.Values
+                .OrderByDescending(u => ListeAdjacence[u.Identifiant].Count)
+                .ToList();
+
+            // Initialiser toutes les couleurs à -1 (non colorié)
+            foreach (var sommet in sommetsTries)
             {
-               // Console.Write($"{utilisateur.Key} -> ");
-               // Console.WriteLine(string.Join(", ", utilisateur.Value));
+                couleurSommets[sommet.Identifiant] = -1;
+            }
+
+            // Tableau pour suivre les couleurs utilisées
+            bool[] couleursUtilisees = new bool[sommetsTries.Count];
+
+            // Colorier les sommets
+            foreach (var sommet in sommetsTries)
+            {
+                // Réinitialiser les couleurs utilisées pour chaque sommet
+                Array.Clear(couleursUtilisees, 0, couleursUtilisees.Length);
+
+                // Vérifier les couleurs des voisins
+                foreach (var voisin in ListeAdjacence[sommet.Identifiant])
+                {
+                    if (couleurSommets[voisin] != -1)
+                    {
+                        couleursUtilisees[couleurSommets[voisin]] = true;
+                    }
+                }
+
+                // Trouver la première couleur non utilisée
+                int couleur = 0;
+                while (couleur < couleursUtilisees.Length && couleursUtilisees[couleur])
+                {
+                    couleur++;
+                }
+
+                // Attribuer la couleur au sommet
+                couleurSommets[sommet.Identifiant] = couleur;
+            }
+
+            // Afficher les couleurs attribuées
+            foreach (var sommet in couleurSommets)
+            {
+                Console.WriteLine($"Sommet {sommet.Key} a la couleur {sommet.Value}");
             }
         }
 
         /// <summary>
-        /// Génère et affiche le graphe des relations entre les utilisateurs
+        /// Génère et affiche le graphe des relations entre les utilisateurs.
         /// </summary>
-        /// <param name="nomFichier">Le nom du fichier où sauvegarder le graphe</param>
+        /// <param name="nomFichier">Le nom du fichier où sauvegarder le graphe.</param>
         public void GenererGraphe(string nomFichier)
         {
             int largeurImage = 1000;
@@ -237,11 +274,15 @@ namespace Etape2
                     }
                 }
 
-                // Dessiner les noeuds
+                // Dessiner les noeuds avec les couleurs attribuées
                 foreach (var utilisateur in Utilisateurs.Values)
                 {
                     var pos = positions[utilisateur.Identifiant];
-                    canvas.DrawCircle(pos.x, pos.y, 10, new SKPaint { Color = SKColors.Red });
+                    int couleur = couleurSommets.ContainsKey(utilisateur.Identifiant) ? couleurSommets[utilisateur.Identifiant] : 0;
+                    SKColor[] couleurs = { SKColors.Red, SKColors.Blue, SKColors.Green, SKColors.Yellow, SKColors.Purple, SKColors.Orange };
+                    SKColor couleurNoeud = couleurs[couleur % couleurs.Length];
+
+                    canvas.DrawCircle(pos.x, pos.y, 10, new SKPaint { Color = couleurNoeud });
                     canvas.DrawText(utilisateur.Identifiant, pos.x + 15, pos.y - 5, new SKPaint { Color = SKColors.Black, TextSize = 12 });
                 }
 
@@ -251,9 +292,8 @@ namespace Etape2
                 using (var stream = File.OpenWrite(nomFichier))
                 {
                     data.SaveTo(stream);
-                    //Console.WriteLine("Le graphe a été sauvegardé dans : " + nomFichier);
+                    Console.WriteLine("Le graphe a été sauvegardé dans : " + nomFichier);
                 }
-                
 
                 try
                 {
@@ -265,6 +305,27 @@ namespace Etape2
                 }
             }
         }
+
+        /// <summary>
+        /// Affiche la liste d'adjacence des utilisateurs.
+        /// </summary>
+        public void AfficherListeAdjacence()
+        {
+            //Console.WriteLine("Liste d'adjacence :");
+            foreach (var utilisateur in ListeAdjacence)
+            {
+                // Console.Write($"{utilisateur.Key} -> ");
+                // Console.WriteLine(string.Join(", ", utilisateur.Value));
+            }
+        }
+
+        /// <summary>
+        /// Génère et affiche le graphe des relations entre les utilisateurs.
+        /// </summary>
+        /// <param name="nomFichier">Le nom du fichier où sauvegarder le graphe.</param>
+        
+
+
     }
 
     public class Utilisateur
